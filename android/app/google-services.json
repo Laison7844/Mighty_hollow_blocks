@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "1010957071784",
+    "project_id": "mightyhollowblocks",
+    "storage_bucket": "mightyhollowblocks.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1010957071784:android:dd9a6b673a343760eb199d",
+        "android_client_info": {
+          "package_name": "com.mighty.hollowblocks"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyANkjabqtXoOvuDfyRrDwZwusQsFye_QTY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
