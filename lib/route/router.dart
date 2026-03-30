@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_projects/ui/add_sections/add_customer.dart';
+import 'package:flutter_projects/model/order_model.dart';
 import 'package:flutter_projects/ui/dashborad.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -7,11 +9,10 @@ import 'package:flutter_projects/ui/splash_screen.dart';
 import 'package:flutter_projects/ui/home_screen.dart';
 import 'package:flutter_projects/ui/customer_screen.dart';
 import 'package:flutter_projects/ui/production_screen.dart';
-import 'package:flutter_projects/ui/order_screen.dart';
+import 'package:flutter_projects/ui/orders/order_screen.dart';
 import 'package:flutter_projects/ui/settings.dart';
-import 'package:flutter_projects/ui/add_stocks.dart';
-
-
+import 'package:flutter_projects/ui/add_sections/add_order.dart';
+import 'package:flutter_projects/util/color_util.dart';
 
 final appRouterProvider = Provider<GoRouter>((ref) {
   return GoRouter(
@@ -25,7 +26,8 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         builder: (context, state, child) {
           return Scaffold(
             body: child,
-            bottomNavigationBar: Dashborad(),
+            bottomNavigationBar: const Dashborad(),
+            backgroundColor: ColorUtil.background,
           );
         },
         routes: [
@@ -52,8 +54,15 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         ],
       ),
       GoRoute(
-        path: AddStocks.path,
-        builder: (context, state) => const AddStocks(),
+        path: AddCustomer.path,
+        builder: (context, state) => const AddCustomer(),
+      ),
+      GoRoute(
+        path: AddOrder.path,
+        builder: (context, state) {
+          final orderToEdit = state.extra as OrderModel?;
+          return AddOrder(orderToEdit: orderToEdit);
+        },
       ),
     ],
   );

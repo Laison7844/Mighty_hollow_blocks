@@ -1,41 +1,16 @@
 class InventoryModel {
-  int? type;
-  int? totalCount;
+  final int stock4Inch;
+  final int stock6Inch;
+  final int stock8Inch;
 
   InventoryModel({
-    this.type,
-    this.totalCount,
+    required this.stock4Inch,
+    required this.stock6Inch,
+    required this.stock8Inch,
   });
-
-  // From JSON (Firestore / API → Model)
-  factory InventoryModel.fromJson(Map<String, dynamic> json) {
-    return InventoryModel(
-      type: json['type'] as int?,
-      totalCount: json['totalCount'] as int?,
-    );
-  }
-
-  // To JSON (Model → Firestore / API)
-  Map<String, dynamic> toJson() {
-    return {
-      'type': type,
-      'totalCount': totalCount,
-    };
-  }
-
-  // For updating values immutably
-  InventoryModel copyWith({
-    int? type,
-    int? totalCount,
-  }) {
-    return InventoryModel(
-      type: type ?? this.type,
-      totalCount: totalCount ?? this.totalCount,
-    );
-  }
 
   @override
   String toString() {
-    return 'InventoryModel(type: $type, totalCount: $totalCount)';
+    return 'InventoryModel(4": $stock4Inch, 6": $stock6Inch, 8": $stock8Inch)';
   }
 }

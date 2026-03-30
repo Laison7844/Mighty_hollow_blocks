@@ -1,191 +1,428 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_projects/core/constants/constants.dart';
-import 'package:flutter_projects/model/inventory_model.dart';
-import 'package:flutter_projects/ui/add_stocks.dart';
-import 'package:flutter_projects/ui/customer_screen.dart';
+import 'package:flutter_projects/repository/inventory_repository.dart';
+import 'package:flutter_projects/ui/add_sections/add_stocks.dart';
 import 'package:flutter_projects/ui/customs/appbar.dart';
 import 'package:flutter_projects/ui/customs/button.dart';
 import 'package:flutter_projects/ui/dashborad.dart';
-import 'package:flutter_projects/ui/order_screen.dart';
-import 'package:flutter_projects/ui/production_screen.dart';
-import 'package:flutter_projects/ui/settings.dart';
-import 'package:go_router/go_router.dart';
+import 'package:flutter_projects/util/color_util.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class HomeScreen extends StatefulWidget {
-  HomeScreen({super.key});
+class HomeScreen extends ConsumerStatefulWidget {
+  const HomeScreen({super.key});
 
   static String path = "/home_screen";
+
   @override
-  State<HomeScreen> createState() => _HomeScreenState();
+  ConsumerState<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen> {
+class _HomeScreenState extends ConsumerState<HomeScreen> {
   @override
   Widget build(BuildContext context) {
-    final inv = InventoryModel(type: 6, totalCount: 120);
+    final inventoryAsync = ref.watch(inventoryCalculatedProvider);
 
     return Scaffold(
-      appBar: CustomAppBar(title: 'Inventory'),
-      backgroundColor: Colors.white,
-      bottomNavigationBar: Dashborad(),
-      body: SingleChildScrollView(
-        child: Column(
-          children: [
-            SizedBox(height: 20),
-            Text(
-              "Current Stock Status",
-              style: TextStyle(fontSize: 24, fontWeight: FontWeight.w700),
+      appBar: const CustomAppBar(
+        title: 'Inventory',
+        subtitle: 'Live stock position across all block sizes.',
+      ),
+      body: inventoryAsync.when(
+        data: (inventory) {
+          final stocks = [
+            inventory.stock4Inch,
+            inventory.stock6Inch,
+            inventory.stock8Inch,
+          ];
+          final totalUnits = stocks.fold(0, (sum, units) => sum + units);
+          final lowStockCount = stocks.where((units) => units < 250).length;
+
+          return SingleChildScrollView(
+            padding: const EdgeInsets.fromLTRB(
+              20,
+              20,
+              20,
+              Dashborad.contentBottomSpacing,
             ),
-            SizedBox(height: 10),
-            buildInventoryCard(title: "joi", type: 4, units: 100),
-            buildInventoryCard(title: "joi", type: 6, units: 2000),
-            buildInventoryCard(title: "joi", type: 8, units: 100),
-            SizedBox(height: 10),
-            CustomButton(
-              icon: Icon(Icons.import_contacts),
-              name: "New Stock Movement",
-              onTap: () {},
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _buildOverviewCard(
+                  totalUnits: totalUnits,
+                  lowStockCount: lowStockCount,
+                ),
+                const SizedBox(height: 24),
+                _SectionHeader(
+                  title: 'Stock overview',
+                  subtitle: 'Tap any card to add fresh stock for that block.',
+                ),
+                const SizedBox(height: 14),
+                _buildInventoryCard(
+                  title: "4 Inch",
+                  type: 4,
+                  units: inventory.stock4Inch,
+                ),
+                _buildInventoryCard(
+                  title: "6 Inch",
+                  type: 6,
+                  units: inventory.stock6Inch,
+                ),
+                _buildInventoryCard(
+                  title: "8 Inch",
+                  type: 8,
+                  units: inventory.stock8Inch,
+                ),
+                const SizedBox(height: 10),
+                CustomButton(
+                  icon: const Icon(Icons.sync_rounded),
+                  name: "Refresh dashboard",
+                  onTap: () {
+                    ref.invalidate(inventoryCalculatedProvider);
+                  },
+                ),
+              ],
             ),
-          ],
+          );
+        },
+        loading: () => const Center(child: CircularProgressIndicator()),
+        error: (err, stack) => Center(
+          child: Padding(
+            padding: const EdgeInsets.all(24),
+            child: Text(
+              "Error loading inventory: $err",
+              textAlign: TextAlign.center,
+              style: const TextStyle(color: ColorUtil.textSecondary),
+            ),
+          ),
         ),
       ),
     );
   }
 
-  Widget buildInventoryCard({
-    required String title,
-    required int type,
-    required int units,
+  Widget _buildOverviewCard({
+    required int totalUnits,
+    required int lowStockCount,
   }) {
-    Color color = type == 4
-        ? const Color.fromARGB(255, 5, 47, 119)
-        : type == 6
-        ? const Color.fromARGB(255, 14, 164, 19)
-        : const Color.fromARGB(255, 171, 155, 13);
-    String name = type == 4
-        ? Constants.type4
-        : type == 6
-        ? Constants.type6
-        : Constants.type8;
     return Container(
-      height: 180,
-      margin: const EdgeInsets.symmetric(vertical: 20, horizontal: 25),
-      padding: const EdgeInsets.all(16),
+      width: double.infinity,
+      padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(14),
-        boxShadow: [
+        gradient: ColorUtil.heroGradient,
+        borderRadius: BorderRadius.circular(28),
+        boxShadow: const [
           BoxShadow(
-            color: color,
-            blurRadius: 10,
-            offset: const Offset(0, 9),
-            spreadRadius: 0,
+            color: Color(0x260F2D59),
+            blurRadius: 24,
+            offset: Offset(0, 14),
           ),
         ],
-        border: Border.all(color: const Color(0xffe2e8f0)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Top Row
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            decoration: BoxDecoration(
+              color: Colors.white.withValues(alpha: 0.12),
+              borderRadius: BorderRadius.circular(999),
+            ),
+            child: const Text(
+              'Current stock status',
+              style: TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ),
+          const SizedBox(height: 20),
+          Text(
+            '$totalUnits',
+            style: const TextStyle(
+              fontSize: 42,
+              fontWeight: FontWeight.w900,
+              color: Colors.white,
+            ),
+          ),
+          const SizedBox(height: 4),
+          const Text(
+            'units available across all active block sizes',
+            style: TextStyle(
+              fontSize: 14,
+              color: Color(0xFFD7E6FF),
+              height: 1.4,
+            ),
+          ),
+          const SizedBox(height: 20),
           Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Container(
-                padding: EdgeInsets.all(10),
-                decoration: BoxDecoration(
-                  color: color.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(10),
-                ),
-
-                child: Text(
-                  "$title ($name)",
-                  style: TextStyle(
-                    color: color,
-                    fontWeight: FontWeight.w900,
-                    fontSize: 15,
-                  ),
+              Expanded(
+                child: _HeroMetric(
+                  label: 'Low stock types',
+                  value: '$lowStockCount',
                 ),
               ),
-              Icon(Icons.layers, color: color, size: 30),
+              const SizedBox(width: 12),
+              const Expanded(
+                child: _HeroMetric(label: 'Tracked sizes', value: '3'),
+              ),
             ],
           ),
+        ],
+      ),
+    );
+  }
 
-          const SizedBox(height: 12),
+  Widget _buildInventoryCard({
+    required String title,
+    required int type,
+    required int units,
+  }) {
+    final color = ColorUtil.inventoryColor(type);
+    final tint = ColorUtil.inventoryTint(type);
+    final name = switch (type) {
+      4 => Constants.type4,
+      6 => Constants.type6,
+      _ => Constants.type8,
+    };
+    final statusLabel = units < 250
+        ? 'Needs restock'
+        : units < 500
+        ? 'Watch level'
+        : 'Healthy';
+    final statusColor = units < 250
+        ? ColorUtil.danger
+        : units < 500
+        ? ColorUtil.accent
+        : ColorUtil.darkGreen;
 
-          // Main Units
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              Text(
-                units.toString(),
-                style: TextStyle(fontSize: 34, fontWeight: FontWeight.w900),
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 16),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(26),
+          onTap: () {
+            showDialog(
+              context: context,
+              builder: (context) => AddStocks(blockName: title, type: type),
+            );
+          },
+          child: Ink(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [ColorUtil.surface, tint],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
               ),
-              const SizedBox(width: 10),
-              const Text(
-                "units",
-                style: TextStyle(fontSize: 14, color: Colors.grey),
-              ),
-            ],
-          ),
-
-          const SizedBox(height: 10),
-          Divider(height: 2, indent: 10, endIndent: 10),
-          const SizedBox(height: 10),
-
-          // Bottom Row
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              units < 250
-                  ? Row(
-                      children: [
-                        const Icon(
-                          Icons.warning_amber_rounded,
-                          color: Colors.red,
-                          size: 18,
-                        ),
-                        const SizedBox(width: 5),
-                        Text(
-                          "Low Stock: ${units - 500}",
-                          style: const TextStyle(
-                            color: Colors.red,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ],
-                    )
-                  : Row(
-                      children: [
-                        const Icon(
-                          Icons.check_circle,
-                          color: Colors.green,
-                          size: 18,
-                        ),
-                        const SizedBox(width: 5),
-                        Text(
-                          "Stable",
-                          style: const TextStyle(
-                            color: Colors.blueGrey,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ],
+              borderRadius: BorderRadius.circular(26),
+              border: Border.all(color: ColorUtil.border),
+            ),
+            padding: const EdgeInsets.all(22),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: color.withValues(alpha: 0.12),
+                        borderRadius: BorderRadius.circular(18),
+                      ),
+                      child: Icon(Icons.view_in_ar_rounded, color: color),
                     ),
-
-              GestureDetector(
-                onTap: () {
-                  context.go(AddStocks.path);
-                },
-                child: const Text(
-                  "Add Stock",
-                  style: TextStyle(
-                    color: Color(0xff2563eb),
-                    fontWeight: FontWeight.bold,
+                    const SizedBox(width: 14),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            title,
+                            style: const TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.w800,
+                            ),
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            name,
+                            style: const TextStyle(
+                              color: ColorUtil.textSecondary,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 8,
+                      ),
+                      decoration: BoxDecoration(
+                        color: statusColor.withValues(alpha: 0.12),
+                        borderRadius: BorderRadius.circular(999),
+                      ),
+                      child: Text(
+                        statusLabel,
+                        style: TextStyle(
+                          color: statusColor,
+                          fontWeight: FontWeight.w700,
+                          fontSize: 12,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 24),
+                Text(
+                  '$units',
+                  style: const TextStyle(
+                    fontSize: 38,
+                    height: 1,
+                    fontWeight: FontWeight.w900,
+                    color: ColorUtil.textPrimary,
                   ),
                 ),
+                const SizedBox(height: 6),
+                const Text(
+                  'ready units',
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: ColorUtil.textSecondary,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                const SizedBox(height: 20),
+                Row(
+                  children: [
+                    Expanded(
+                      child: _InfoPill(
+                        icon: Icons.stacked_bar_chart_rounded,
+                        label: units < 250 ? 'Below target' : 'Stable supply',
+                        color: color,
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: _InfoPill(
+                        icon: Icons.add_circle_outline_rounded,
+                        label: 'Add stock',
+                        color: color,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _SectionHeader extends StatelessWidget {
+  const _SectionHeader({required this.title, required this.subtitle});
+
+  final String title;
+  final String subtitle;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          title,
+          style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w800),
+        ),
+        const SizedBox(height: 4),
+        Text(
+          subtitle,
+          style: const TextStyle(
+            color: ColorUtil.textSecondary,
+            fontSize: 14,
+            height: 1.4,
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _HeroMetric extends StatelessWidget {
+  const _HeroMetric({required this.label, required this.value});
+
+  final String label;
+  final String value;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: Colors.white12),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            value,
+            style: const TextStyle(
+              fontSize: 24,
+              fontWeight: FontWeight.w900,
+              color: Colors.white,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            label,
+            style: const TextStyle(
+              color: Color(0xFFD7E6FF),
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _InfoPill extends StatelessWidget {
+  const _InfoPill({
+    required this.icon,
+    required this.label,
+    required this.color,
+  });
+
+  final IconData icon;
+  final String label;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.8),
+        borderRadius: BorderRadius.circular(18),
+      ),
+      child: Row(
+        children: [
+          Icon(icon, size: 18, color: color),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              label,
+              style: const TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.w700,
+                color: ColorUtil.textPrimary,
               ),
-            ],
+            ),
           ),
         ],
       ),

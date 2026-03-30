@@ -1,30 +1,43 @@
-// This is a basic Flutter widget test.
-//
-// To perform an interaction with a widget in your test, use the WidgetTester
-// utility in the flutter_test package. For example, you can send tap and scroll
-// gestures. You can also use WidgetTester to find child widgets in the widget
-// tree, read text, and verify that the values of widget properties are correct.
-
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:flutter_projects/main.dart';
+import 'package:flutter_projects/ui/customs/appbar.dart';
+import 'package:flutter_projects/ui/customs/button.dart';
 
 void main() {
-  testWidgets('Counter increments smoke test', (WidgetTester tester) async {
-    // Build our app and trigger a frame.
-    await tester.pumpWidget(const MyApp());
+  testWidgets('custom UI widgets render and respond to taps', (
+    WidgetTester tester,
+  ) async {
+    var tapped = false;
 
-    // Verify that our counter starts at 0.
-    expect(find.text('0'), findsOneWidget);
-    expect(find.text('1'), findsNothing);
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          appBar: const CustomAppBar(
+            title: 'Inventory',
+            subtitle: 'Live stock position across all block sizes.',
+          ),
+          body: CustomButton(
+            name: 'Refresh dashboard',
+            icon: const Icon(Icons.sync_rounded),
+            onTap: () {
+              tapped = true;
+            },
+          ),
+        ),
+      ),
+    );
 
-    // Tap the '+' icon and trigger a frame.
-    await tester.tap(find.byIcon(Icons.add));
+    expect(find.text('Inventory'), findsOneWidget);
+    expect(
+      find.text('Live stock position across all block sizes.'),
+      findsOneWidget,
+    );
+    expect(find.text('Refresh dashboard'), findsOneWidget);
+
+    await tester.tap(find.text('Refresh dashboard'));
     await tester.pump();
 
-    // Verify that our counter has incremented.
-    expect(find.text('0'), findsNothing);
-    expect(find.text('1'), findsOneWidget);
+    expect(tapped, isTrue);
   });
 }
