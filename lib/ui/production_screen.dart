@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_projects/model/production_model.dart';
 import 'package:flutter_projects/ui/customs/appbar.dart';
 import 'package:flutter_projects/ui/customs/button.dart';
+import 'package:flutter_projects/ui/dashborad.dart';
+import 'package:flutter_projects/util/color_util.dart';
 import 'package:intl/intl.dart';
 
 class ProductionScreen extends StatefulWidget {
@@ -49,27 +52,50 @@ class _ProductionScreenState extends State<ProductionScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      bottomNavigationBar: Dashborad(),
       backgroundColor: Colors.white,
       appBar: CustomAppBar(title: "Production List"),
-      body: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 20),
-        child: Column(
-       //   mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            const SizedBox(height: 20),
+      body: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20),
+          child: Column(
+            //   mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              const SizedBox(height: 20),
 
-            const Text(
-              "Daily Production Logs",
-              style: TextStyle(fontSize: 24, fontWeight: FontWeight.w700),
-            ),
+              const Text(
+                "Daily Production Logs",
+                style: TextStyle(fontSize: 24, fontWeight: FontWeight.w700),
+              ),
 
-            const SizedBox(height: 10),
+              const SizedBox(height: 10),
 
-            _latestProduction(),
-                        const SizedBox(height: 10),
-CustomButton(icon: Icon(Icons.dashboard), name: "Record Production", onTap: (){})
-          ],
+              _latestProduction(),
+              const SizedBox(height: 10),
+              CustomButton(
+                icon: Icon(Icons.dashboard),
+                name: "Record Production",
+                onTap: () {},
+              ),
+              const SizedBox(height: 10),
+
+              const Text(
+                "History",
+                style: TextStyle(fontSize: 24, fontWeight: FontWeight.w700),
+              ),
+              const SizedBox(height: 10),
+              _productionList(
+                ProductionModel(
+                  date: DateTime.now(),
+                  totalProduction: 122,
+                  fourInch: 100,
+                  sixInch: 100,
+                  eightInch: 100,
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -77,61 +103,115 @@ CustomButton(icon: Icon(Icons.dashboard), name: "Record Production", onTap: (){}
 
   Card _latestProduction() {
     return Card(
-            elevation: 10,
-            child: Container(
-              height: 160,
-              width: double.infinity,
-              decoration: BoxDecoration(
-                color: const Color.fromARGB(255, 5, 22, 148),
-                borderRadius: BorderRadius.circular(10),
-              ),
-              child: Padding(
-                padding: const EdgeInsets.only(left: 5),
-                child: Container(
-                  height: 160,
-                  width: double.infinity,
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: Padding(
-                    padding: const EdgeInsets.only(left: 10),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Text(
-                          formatProductionDate(DateTime.now()),
-                          style: const TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w500,
-                            color: Colors.black54,
-                          ),
-                        ),
-                        const SizedBox(height: 10),
-                        Text(
-                          "$todayProduction blocks",
-                          style: const TextStyle(
-                            fontSize: 32,
-                            fontWeight: FontWeight.w800,
-                            color: Color.fromARGB(255, 10, 69, 173),
-                          ),
-                        ),
-                        const SizedBox(height: 10),
-                        Text(
-                          "Last entry recorded ${timeAgo(DateTime.now())
-}",
-                          style: const TextStyle(
-                            fontSize: 13,
-                            color: Colors.black54,
-                          ),
-                        ),
-                      ],
+      elevation: 10,
+      child: Container(
+        height: 160,
+        width: double.infinity,
+        decoration: BoxDecoration(
+          color: ColorUtil.blurBorder,
+          borderRadius: BorderRadius.circular(10),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.only(left: 5),
+          child: Container(
+            height: 160,
+            width: double.infinity,
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Padding(
+              padding: const EdgeInsets.only(left: 10),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    formatProductionDate(DateTime.now()),
+                    style: const TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w500,
+                      color: Colors.black54,
                     ),
                   ),
-                ),
+                  const SizedBox(height: 10),
+                  Text(
+                    "$todayProduction blocks",
+                    style: const TextStyle(
+                      fontSize: 32,
+                      fontWeight: FontWeight.w800,
+                      color: Color.fromARGB(255, 10, 69, 173),
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  Text(
+                    "Last entry recorded ${timeAgo(DateTime.now())}",
+                    style: const TextStyle(fontSize: 13, color: Colors.black54),
+                  ),
+                ],
               ),
             ),
-          );
+          ),
+        ),
+      ),
+    );
+  }
+
+  _productionList(ProductionModel list) {
+    return Card(
+      elevation: 5,
+      child: Container(
+        padding: EdgeInsets.all(20),
+        height: 130,
+        width: double.infinity,
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(10),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  list.date.toString(),
+                  style: const TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.black54,
+                  ),
+                ),
+                Text(
+                  "${list.totalProduction} blocks",
+                  style: const TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.w700,
+                    color: Color.fromARGB(255, 10, 69, 173),
+                  ),
+                ),
+              ],
+            ),
+            SizedBox(height: 10),
+            RichText(
+              text: TextSpan(
+                style: const TextStyle(
+                  color: Colors.black,
+                  fontSize: 16,
+                  fontWeight: FontWeight.w700,
+                ),
+                children: [
+                  TextSpan(text: '4": ${list.fourInch}'),
+                  const TextSpan(text: '  |  '),
+                  TextSpan(text: '6": ${list.sixInch}'),
+                  const TextSpan(text: '  |  '),
+                  TextSpan(text: '8": ${list.eightInch}'),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }
