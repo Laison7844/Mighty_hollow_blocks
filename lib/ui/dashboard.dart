@@ -7,11 +7,11 @@ import 'package:flutter_projects/ui/settings.dart';
 import 'package:flutter_projects/util/color_util.dart';
 import 'package:go_router/go_router.dart';
 
-class Dashborad extends StatelessWidget {
-  const Dashborad({super.key});
+class Dashboard extends StatelessWidget {
+  const Dashboard({super.key});
 
   static String path = "/dashboard";
-  static const double contentBottomSpacing = 104;
+  static const double contentBottomSpacing = 16;
 
   static final List<_DashboardItem> _items = [
     _DashboardItem(

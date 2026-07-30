@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_projects/model/production_model.dart';
 import 'package:flutter_projects/repository/inventory_repository.dart';
 import 'package:flutter_projects/repository/production_repository.dart';
+import 'package:flutter_projects/util/color_util.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 enum _StockAction { add, remove }
@@ -265,7 +266,7 @@ class _AddStocksState extends ConsumerState<AddStocks> {
                   focusedBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
                     borderSide: const BorderSide(
-                      color: Color(0xFF2563EB),
+                      color: ColorUtil.primary,
                       width: 1.6,
                     ),
                   ),
@@ -290,7 +291,7 @@ class _AddStocksState extends ConsumerState<AddStocks> {
                 ),
           style: ElevatedButton.styleFrom(
             backgroundColor: _selectedAction == _StockAction.add
-                ? const Color(0xFF2563EB)
+                ? ColorUtil.primary
                 : const Color(0xFFDC2626),
             minimumSize: const Size(0, 48),
             padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),

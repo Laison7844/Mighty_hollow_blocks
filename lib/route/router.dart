@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_projects/ui/add_sections/add_customer.dart';
 import 'package:flutter_projects/model/order_model.dart';
-import 'package:flutter_projects/ui/dashborad.dart';
+import 'package:flutter_projects/ui/dashboard.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
@@ -11,6 +11,7 @@ import 'package:flutter_projects/ui/production_screen.dart';
 import 'package:flutter_projects/ui/orders/order_screen.dart';
 import 'package:flutter_projects/ui/settings.dart';
 import 'package:flutter_projects/ui/add_sections/add_order.dart';
+import 'package:flutter_projects/ui/orders/order_detail_screen.dart';
 import 'package:flutter_projects/util/color_util.dart';
 
 final appRouterProvider = Provider<GoRouter>((ref) {
@@ -21,7 +22,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         builder: (context, state, child) {
           return Scaffold(
             body: child,
-            bottomNavigationBar: const Dashborad(),
+            bottomNavigationBar: const Dashboard(),
             backgroundColor: ColorUtil.background,
           );
         },
@@ -57,6 +58,13 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         builder: (context, state) {
           final orderToEdit = state.extra as OrderModel?;
           return AddOrder(orderToEdit: orderToEdit);
+        },
+      ),
+      GoRoute(
+        path: OrderDetailScreen.path,
+        builder: (context, state) {
+          final order = state.extra as OrderModel;
+          return OrderDetailScreen(order: order);
         },
       ),
     ],

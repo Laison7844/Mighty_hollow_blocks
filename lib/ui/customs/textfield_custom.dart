@@ -11,6 +11,7 @@ class TextfieldCustom extends StatelessWidget {
     this.readOnly = false,
     this.maxLines = 1,
     this.minLines,
+    this.focusNode,
   });
 
   final String hintText;
@@ -20,11 +21,13 @@ class TextfieldCustom extends StatelessWidget {
   final bool readOnly;
   final int maxLines;
   final int? minLines;
+  final FocusNode? focusNode;
 
   @override
   Widget build(BuildContext context) {
     return TextField(
       controller: controller,
+      focusNode: focusNode,
       keyboardType: keyboardType,
       readOnly: readOnly,
       maxLines: maxLines,

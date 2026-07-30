@@ -567,7 +567,6 @@ class _PdfExportSheetState extends ConsumerState<PdfExportSheet> {
     final candidateDirectories = <Directory>[];
 
     if (Platform.isAndroid) {
-      candidateDirectories.add(Directory('/storage/emulated/0/Download'));
       final externalDownloads = await getExternalStorageDirectories(
         type: StorageDirectory.downloads,
       );

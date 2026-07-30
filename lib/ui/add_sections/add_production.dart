@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_projects/model/production_model.dart';
 import 'package:flutter_projects/repository/production_repository.dart';
+import 'package:flutter_projects/util/color_util.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
@@ -59,7 +60,7 @@ class _AddProductionState extends ConsumerState<AddProduction> {
           scale: 0.8,
           child: Theme(
             data: Theme.of(context).copyWith(
-              colorScheme: const ColorScheme.light(primary: Color(0xFF2563EB)),
+              colorScheme: const ColorScheme.light(primary: ColorUtil.primary),
             ),
             child: child!,
           ),
@@ -292,7 +293,7 @@ class _AddProductionState extends ConsumerState<AddProduction> {
         ElevatedButton(
           onPressed: _isLoading ? null : _saveProduction,
           style: ElevatedButton.styleFrom(
-            backgroundColor: const Color(0xFF2563EB),
+            backgroundColor: ColorUtil.primary,
             foregroundColor: Colors.white,
             elevation: 0,
             minimumSize: const Size(120, 48),

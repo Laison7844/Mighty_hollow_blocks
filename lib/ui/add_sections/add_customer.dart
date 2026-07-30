@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_projects/model/customer_model.dart';
 import 'package:flutter_projects/repository/customer_repository.dart';
 import 'package:flutter_projects/ui/customs/textfield_custom.dart';
+import 'package:flutter_projects/util/color_util.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
@@ -84,6 +85,7 @@ class _AddCustomerPageState extends ConsumerState<AddCustomer> {
     return Scaffold(
       backgroundColor: const Color(0xFFF8FAFC),
       appBar: AppBar(
+        centerTitle: true,
         title: const Text(
           "Register New Customer",
           style: TextStyle(
@@ -202,10 +204,10 @@ class _AddCustomerPageState extends ConsumerState<AddCustomer> {
               child: ElevatedButton(
                 onPressed: _isLoading ? null : _saveCustomer,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF2563EB),
+                  backgroundColor: ColorUtil.primary,
                   padding: const EdgeInsets.symmetric(vertical: 16),
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(18),
                   ),
                   elevation: 0,
                 ),
@@ -272,7 +274,7 @@ class _AddCustomerPageState extends ConsumerState<AddCustomer> {
                   color: const Color(0xFFEFF6FF),
                   borderRadius: BorderRadius.circular(14),
                 ),
-                child: Icon(icon, color: const Color(0xFF2563EB), size: 20),
+                child: Icon(icon, color: ColorUtil.primary, size: 20),
               ),
               const SizedBox(width: 12),
               Text(

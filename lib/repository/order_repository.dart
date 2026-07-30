@@ -12,23 +12,37 @@ class OrderRepository {
   final CollectionReference _ordersCollection = FirebaseFirestore.instance
       .collection('orders');
 
+  final DocumentReference _inventoryRef = FirebaseFirestore.instance.collection('metadata').doc('inventory');
+
   // Add Order
   Future<void> addOrder(OrderModel order) async {
-    await _ordersCollection.add(order.toJson());
+    final docRef = _ordersCollection.doc();
+    final newOrder = order.copyWith(id: docRef.id);
+
+    final batch = FirebaseFirestore.instance.batch();
+    batch.set(docRef, newOrder.toJson());
+    if (!order.isCancelled) {
+        batch.set(_inventoryRef, {
+        'stock_4_inch': FieldValue.increment(-order.stock4inch),
+        'stock_6_inch': FieldValue.increment(-order.stock6inch),
+        'stock_8_inch': FieldValue.increment(-order.stock8inch),
+        }, SetOptions(merge: true));
+    }
+    await batch.commit();
   }
 
-  // Get Orders Stream
   Stream<List<OrderModel>> getOrders() {
     return _ordersCollection
-        .orderBy('order_date', descending: true)
         .snapshots()
         .map((snapshot) {
-          return snapshot.docs.map((doc) {
+          final orders = snapshot.docs.map((doc) {
             return OrderModel.fromJson(
               doc.data() as Map<String, dynamic>,
               id: doc.id,
             );
           }).toList();
+          orders.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+          return orders;
         });
   }
 
@@ -42,16 +56,22 @@ class OrderRepository {
         .orderBy('order_date', descending: true)
         .get();
 
-    return snapshot.docs.map((doc) {
+    final orders = snapshot.docs.map((doc) {
       return OrderModel.fromJson(
         doc.data() as Map<String, dynamic>,
         id: doc.id,
       );
     }).toList();
+    orders.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+    return orders;
   }
 
   // Update Payment
-  Future<void> updatePayment(String orderId, int amountPaid) async {
+  Future<void> updatePayment(
+    String orderId,
+    int amountPaid, {
+    String paymentMode = 'Money in hand',
+  }) async {
     final docRef = _ordersCollection.doc(orderId);
 
     await FirebaseFirestore.instance.runTransaction((transaction) async {
@@ -63,6 +83,11 @@ class OrderRepository {
       final data = snapshot.data() as Map<String, dynamic>;
       final currentPaid = data['paid_amount'] as int? ?? 0;
       final currentDue = data['due_amount'] as int? ?? 0;
+      
+      if (amountPaid > currentDue) {
+        throw Exception("Paid amount cannot exceed the due amount!");
+      }
+
       final currentHistory = (data['payment_history'] as List<dynamic>? ?? [])
           .whereType<Map>()
           .map((entry) => Map<String, dynamic>.from(entry))
@@ -72,7 +97,11 @@ class OrderRepository {
       final newDue = currentDue - amountPaid;
       final newHistory = [
         ...currentHistory,
-        PaymentEntry(amount: amountPaid, date: DateTime.now()).toJson(),
+        PaymentEntry(
+          amount: amountPaid,
+          date: DateTime.now(),
+          paymentMode: paymentMode,
+        ).toJson(),
       ];
 
       // Determine Payment Status
@@ -97,23 +126,112 @@ class OrderRepository {
   }
 
   // Update Delivery Status
-  Future<void> updateDeliveryStatus(String orderId) async {
+  Future<void> updateDeliveryStatus(
+    String orderId, {
+    String? deliveryNotes,
+  }) async {
     final docRef = _ordersCollection.doc(orderId);
-    await docRef.update({
+    final updates = <String, dynamic>{
       'delivery_status': 1, // 1 = Delivered
       'is_delivered': true,
       'delivery_date': DateTime.now().toIso8601String(),
-    });
+    };
+    if (deliveryNotes != null && deliveryNotes.trim().isNotEmpty) {
+      updates['delivery_notes'] = deliveryNotes.trim();
+    }
+    await docRef.update(updates);
   }
 
   // Update Order
   Future<void> updateOrder(OrderModel order) async {
     if (order.id == null) return;
-    await _ordersCollection.doc(order.id).update(order.toJson());
+    
+    await FirebaseFirestore.instance.runTransaction((transaction) async {
+       final oldDoc = await transaction.get(_ordersCollection.doc(order.id));
+       if (!oldDoc.exists) return;
+       final oldData = oldDoc.data() as Map<String, dynamic>;
+       
+       final oldIsCancelled = oldData['is_cancelled'] ?? false;
+       final newIsCancelled = order.isCancelled;
+
+       int diff4 = 0, diff6 = 0, diff8 = 0;
+
+       if (!oldIsCancelled && !newIsCancelled) {
+           diff4 = (oldData['stock_4_inch'] as int? ?? 0) - order.stock4inch;
+           diff6 = (oldData['stock_6_inch'] as int? ?? 0) - order.stock6inch;
+           diff8 = (oldData['stock_8_inch'] as int? ?? 0) - order.stock8inch;
+       } else if (oldIsCancelled && !newIsCancelled) {
+           diff4 = -order.stock4inch;
+           diff6 = -order.stock6inch;
+           diff8 = -order.stock8inch;
+       } else if (!oldIsCancelled && newIsCancelled) {
+           diff4 = (oldData['stock_4_inch'] as int? ?? 0);
+           diff6 = (oldData['stock_6_inch'] as int? ?? 0);
+           diff8 = (oldData['stock_8_inch'] as int? ?? 0);
+       }
+
+       transaction.update(_ordersCollection.doc(order.id), order.toJson());
+       
+       if (diff4 != 0 || diff6 != 0 || diff8 != 0) {
+           transaction.set(_inventoryRef, {
+              'stock_4_inch': FieldValue.increment(diff4),
+              'stock_6_inch': FieldValue.increment(diff6),
+              'stock_8_inch': FieldValue.increment(diff8),
+           }, SetOptions(merge: true));
+       }
+    });
   }
 
   // Delete Order
   Future<void> deleteOrder(String orderId) async {
-    await _ordersCollection.doc(orderId).delete();
+    await FirebaseFirestore.instance.runTransaction((transaction) async {
+       final oldDoc = await transaction.get(_ordersCollection.doc(orderId));
+       if (!oldDoc.exists) return;
+       final oldData = oldDoc.data() as Map<String, dynamic>;
+       
+       final isCancelled = oldData['is_cancelled'] ?? false;
+
+       int diff4 = 0, diff6 = 0, diff8 = 0;
+       if (!isCancelled) {
+           diff4 = (oldData['stock_4_inch'] as int? ?? 0);
+           diff6 = (oldData['stock_6_inch'] as int? ?? 0);
+           diff8 = (oldData['stock_8_inch'] as int? ?? 0);
+       }
+
+       transaction.delete(_ordersCollection.doc(orderId));
+       
+       if (diff4 != 0 || diff6 != 0 || diff8 != 0) {
+           transaction.set(_inventoryRef, {
+              'stock_4_inch': FieldValue.increment(diff4),
+              'stock_6_inch': FieldValue.increment(diff6),
+              'stock_8_inch': FieldValue.increment(diff8),
+           }, SetOptions(merge: true));
+       }
+    });
+  }
+
+  // Cancel Order
+  Future<void> cancelOrder(String orderId) async {
+    await FirebaseFirestore.instance.runTransaction((transaction) async {
+       final oldDoc = await transaction.get(_ordersCollection.doc(orderId));
+       if (!oldDoc.exists) return;
+       final oldData = oldDoc.data() as Map<String, dynamic>;
+       
+       if (oldData['is_cancelled'] == true) return; 
+
+       final diff4 = (oldData['stock_4_inch'] as int? ?? 0);
+       final diff6 = (oldData['stock_6_inch'] as int? ?? 0);
+       final diff8 = (oldData['stock_8_inch'] as int? ?? 0);
+
+       transaction.update(_ordersCollection.doc(orderId), {'is_cancelled': true});
+       
+       if (diff4 != 0 || diff6 != 0 || diff8 != 0) {
+           transaction.set(_inventoryRef, {
+              'stock_4_inch': FieldValue.increment(diff4),
+              'stock_6_inch': FieldValue.increment(diff6),
+              'stock_8_inch': FieldValue.increment(diff8),
+           }, SetOptions(merge: true));
+       }
+    });
   }
 }

@@ -3,7 +3,7 @@ import 'package:flutter_projects/repository/order_repository.dart';
 import 'package:flutter_projects/ui/add_sections/add_order.dart';
 import 'package:flutter_projects/ui/customs/appbar.dart';
 import 'package:flutter_projects/ui/customs/button.dart';
-import 'package:flutter_projects/ui/dashborad.dart';
+import 'package:flutter_projects/ui/dashboard.dart';
 import 'package:flutter_projects/ui/customs/order_list_item.dart';
 import 'package:flutter_projects/ui/orders/order_history_screen.dart';
 import 'package:flutter_projects/util/color_util.dart';
@@ -46,7 +46,7 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen> {
               20,
               20,
               20,
-              Dashborad.contentBottomSpacing,
+              Dashboard.contentBottomSpacing,
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,

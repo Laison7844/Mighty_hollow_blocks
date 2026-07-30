@@ -5,7 +5,10 @@ import 'package:flutter_projects/repository/inventory_repository.dart';
 import 'package:flutter_projects/repository/order_repository.dart';
 import 'package:flutter_projects/repository/settings_repository.dart';
 import 'package:flutter_projects/ui/customs/textfield_custom.dart';
+import 'package:flutter_projects/util/color_util.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_projects/model/customer_model.dart';
+import 'package:flutter_projects/repository/customer_repository.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'dart:math';
@@ -23,6 +26,7 @@ class _AddOrderState extends ConsumerState<AddOrder> {
   // Controllers
   final TextEditingController nameController = TextEditingController();
   final TextEditingController mobileController = TextEditingController();
+  final TextEditingController addressController = TextEditingController();
   final TextEditingController stock4Controller = TextEditingController();
   final TextEditingController stock6Controller = TextEditingController();
   final TextEditingController stock8Controller = TextEditingController();
@@ -42,6 +46,7 @@ class _AddOrderState extends ConsumerState<AddOrder> {
       final order = widget.orderToEdit!;
       nameController.text = order.name;
       mobileController.text = order.customerMobile;
+      addressController.text = order.address;
       stock4Controller.text = order.stock4inch > 0
           ? order.stock4inch.toString()
           : '';
@@ -74,6 +79,7 @@ class _AddOrderState extends ConsumerState<AddOrder> {
     stock8Controller.removeListener(_calculateTotal);
     nameController.dispose();
     mobileController.dispose();
+    addressController.dispose();
     stock4Controller.dispose();
     stock6Controller.dispose();
     stock8Controller.dispose();
@@ -256,13 +262,16 @@ class _AddOrderState extends ConsumerState<AddOrder> {
       id: widget.orderToEdit?.id,
       name: nameController.text.trim(),
       customerMobile: mobileController.text.trim(),
+      address: addressController.text.trim(),
       orderId: orderId,
       paidAmount: paid,
       dueAmount: totalValue - paid,
       paymentStatus: paymentStatus,
       deliveryStatus: widget.orderToEdit?.deliveryStatus ?? 0,
       orderDate: orderDate,
+      createdAt: widget.orderToEdit?.createdAt ?? DateTime.now(),
       deliveryDate: widget.orderToEdit?.deliveryDate ?? "Pending",
+      deliveryNotes: widget.orderToEdit?.deliveryNotes ?? '',
       orderValue: totalValue,
       description: descriptionController.text.trim(),
       stock4inch: qty4,
@@ -308,9 +317,12 @@ class _AddOrderState extends ConsumerState<AddOrder> {
       _calculateTotal();
     });
 
+    final customers = ref.watch(customerStreamProvider).asData?.value ?? [];
+
     return Scaffold(
       backgroundColor: const Color(0xFFF8FAFC),
       appBar: AppBar(
+        centerTitle: true,
         title: Text(
           widget.orderToEdit != null ? "Edit Order" : "Create New Order",
           style: const TextStyle(
@@ -332,9 +344,75 @@ class _AddOrderState extends ConsumerState<AddOrder> {
           children: [
             _buildSectionHeader("Customer Information"),
             _buildLabel("Customer Name"),
-            TextfieldCustom(
-              hintText: "Enter customer name",
-              controller: nameController,
+            RawAutocomplete<CustomerModel>(
+              textEditingController: nameController,
+              focusNode: FocusNode(),
+              optionsBuilder: (TextEditingValue textEditingValue) {
+                if (textEditingValue.text.trim().isEmpty) {
+                  return const Iterable<CustomerModel>.empty();
+                }
+                return customers.where((customer) {
+                  return customer.companyName
+                      .toLowerCase()
+                      .contains(textEditingValue.text.toLowerCase());
+                });
+              },
+              displayStringForOption: (CustomerModel option) => option.companyName,
+              onSelected: (CustomerModel selected) {
+                nameController.text = selected.companyName;
+                if (selected.phoneNumber.isNotEmpty) {
+                  mobileController.text = selected.phoneNumber;
+                }
+                if (selected.address.isNotEmpty) {
+                  addressController.text = selected.address;
+                }
+              },
+              fieldViewBuilder: (context, controller, focusNode, onFieldSubmitted) {
+                return TextfieldCustom(
+                  hintText: "Enter or select customer name",
+                  controller: controller,
+                  focusNode: focusNode,
+                );
+              },
+              optionsViewBuilder: (context, onSelected, options) {
+                return Align(
+                  alignment: Alignment.topLeft,
+                  child: Material(
+                    elevation: 6,
+                    borderRadius: BorderRadius.circular(12),
+                    color: Colors.white,
+                    child: Container(
+                      width: MediaQuery.of(context).size.width - 48,
+                      constraints: const BoxConstraints(maxHeight: 200),
+                      child: ListView.separated(
+                        padding: const EdgeInsets.symmetric(vertical: 6),
+                        shrinkWrap: true,
+                        itemCount: options.length,
+                        separatorBuilder: (_, __) => const Divider(height: 1),
+                        itemBuilder: (context, index) {
+                          final customer = options.elementAt(index);
+                          final subtitle = [
+                            if (customer.phoneNumber.isNotEmpty) customer.phoneNumber,
+                            if (customer.address.isNotEmpty) customer.address,
+                          ].join(' • ');
+
+                          return ListTile(
+                            dense: true,
+                            title: Text(
+                              customer.companyName,
+                              style: const TextStyle(fontWeight: FontWeight.bold),
+                            ),
+                            subtitle: subtitle.isNotEmpty
+                                ? Text(subtitle, style: const TextStyle(fontSize: 12))
+                                : null,
+                            onTap: () => onSelected(customer),
+                          );
+                        },
+                      ),
+                    ),
+                  ),
+                );
+              },
             ),
             const SizedBox(height: 16),
             _buildLabel("Customer Mobile Number"),
@@ -343,6 +421,13 @@ class _AddOrderState extends ConsumerState<AddOrder> {
               controller: mobileController,
               keyboardType: TextInputType.phone,
               suffix: const Icon(Icons.phone_outlined, size: 20),
+            ),
+            const SizedBox(height: 16),
+            _buildLabel("Delivery Address"),
+            TextfieldCustom(
+              hintText: "Enter delivery/site address",
+              controller: addressController,
+              suffix: const Icon(Icons.location_on_outlined, size: 20),
             ),
             const SizedBox(height: 24),
 
@@ -539,10 +624,10 @@ class _AddOrderState extends ConsumerState<AddOrder> {
               child: ElevatedButton(
                 onPressed: _isLoading ? null : _saveOrder,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF2563EB),
+                  backgroundColor: ColorUtil.primary,
                   padding: const EdgeInsets.symmetric(vertical: 16),
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(18),
                   ),
                   elevation: 0,
                 ),

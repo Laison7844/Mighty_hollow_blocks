@@ -12,20 +12,70 @@ class ProductionRepository {
   final CollectionReference _productionCollection = FirebaseFirestore.instance
       .collection('production');
 
+  final DocumentReference _inventoryRef = FirebaseFirestore.instance.collection('metadata').doc('inventory');
+
   // Add Production Log
   Future<void> addProduction(ProductionModel production) async {
-    await _productionCollection.add(production.toJson());
+    final docRef = _productionCollection.doc();
+    final newProduction = production.copyWith(id: docRef.id);
+
+    final batch = FirebaseFirestore.instance.batch();
+    batch.set(docRef, newProduction.toJson());
+    batch.set(_inventoryRef, {
+      'stock_4_inch': FieldValue.increment(production.fourInch),
+      'stock_6_inch': FieldValue.increment(production.sixInch),
+      'stock_8_inch': FieldValue.increment(production.eightInch),
+    }, SetOptions(merge: true));
+
+    await batch.commit();
   }
 
   // Update Production Log
   Future<void> updateProduction(ProductionModel production) async {
     if (production.id == null) return;
-    await _productionCollection.doc(production.id).update(production.toJson());
+    
+    await FirebaseFirestore.instance.runTransaction((transaction) async {
+       final oldDoc = await transaction.get(_productionCollection.doc(production.id));
+       if (!oldDoc.exists) return;
+       final oldData = oldDoc.data() as Map<String, dynamic>;
+       
+       final diff4 = production.fourInch - (oldData['fourInch'] as int? ?? 0);
+       final diff6 = production.sixInch - (oldData['sixInch'] as int? ?? 0);
+       final diff8 = production.eightInch - (oldData['eightInch'] as int? ?? 0);
+
+       transaction.update(_productionCollection.doc(production.id), production.toJson());
+       
+       if (diff4 != 0 || diff6 != 0 || diff8 != 0) {
+           transaction.set(_inventoryRef, {
+              'stock_4_inch': FieldValue.increment(diff4),
+              'stock_6_inch': FieldValue.increment(diff6),
+              'stock_8_inch': FieldValue.increment(diff8),
+           }, SetOptions(merge: true));
+       }
+    });
   }
 
   // Delete Production Log
   Future<void> deleteProduction(String id) async {
-    await _productionCollection.doc(id).delete();
+    await FirebaseFirestore.instance.runTransaction((transaction) async {
+       final oldDoc = await transaction.get(_productionCollection.doc(id));
+       if (!oldDoc.exists) return;
+       final oldData = oldDoc.data() as Map<String, dynamic>;
+       
+       final diff4 = -(oldData['fourInch'] as int? ?? 0);
+       final diff6 = -(oldData['sixInch'] as int? ?? 0);
+       final diff8 = -(oldData['eightInch'] as int? ?? 0);
+
+       transaction.delete(_productionCollection.doc(id));
+       
+       if (diff4 != 0 || diff6 != 0 || diff8 != 0) {
+           transaction.set(_inventoryRef, {
+              'stock_4_inch': FieldValue.increment(diff4),
+              'stock_6_inch': FieldValue.increment(diff6),
+              'stock_8_inch': FieldValue.increment(diff8),
+           }, SetOptions(merge: true));
+       }
+    });
   }
 
   // Get Production Stream

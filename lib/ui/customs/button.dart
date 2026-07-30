@@ -26,13 +26,13 @@ class CustomButton extends StatelessWidget {
             height: 58,
             width: double.infinity,
             decoration: BoxDecoration(
-              gradient: ColorUtil.actionGradient,
+              color: ColorUtil.primary,
               borderRadius: BorderRadius.circular(18),
-              boxShadow: const [
+              boxShadow: [
                 BoxShadow(
-                  color: Color(0x2B1D5DB6),
-                  blurRadius: 20,
-                  offset: Offset(0, 12),
+                  color: ColorUtil.primary.withValues(alpha: 0.25),
+                  blurRadius: 16,
+                  offset: const Offset(0, 6),
                 ),
               ],
             ),

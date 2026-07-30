@@ -62,7 +62,7 @@ class _CustomerHistoryScreenState extends ConsumerState<CustomerHistoryScreen> {
 
   // Filter Logic
   List<CustomerModel> _filterCustomers(List<CustomerModel> allCustomers) {
-    return allCustomers.where((customer) {
+    final filtered = allCustomers.where((customer) {
       bool matchesSearch =
           customer.companyName.toLowerCase().contains(_searchQuery) ||
           customer.phoneNumber.contains(_searchQuery);
@@ -75,6 +75,18 @@ class _CustomerHistoryScreenState extends ConsumerState<CustomerHistoryScreen> {
 
       return matchesSearch && matchesDate;
     }).toList();
+
+    filtered.sort((a, b) {
+      final left = a.orders.isNotEmpty
+          ? a.orders.first.createdAt
+          : (a.lastOrderDate ?? a.registrationDate);
+      final right = b.orders.isNotEmpty
+          ? b.orders.first.createdAt
+          : (b.lastOrderDate ?? b.registrationDate);
+      return right.compareTo(left);
+    });
+
+    return filtered;
   }
 
   @override
@@ -127,7 +139,7 @@ class _CustomerHistoryScreenState extends ConsumerState<CustomerHistoryScreen> {
                     Container(
                       decoration: BoxDecoration(
                         color: _selectedDate != null
-                            ? const Color(0xFF2563EB).withValues(alpha: 0.1)
+                            ? ColorUtil.primary.withValues(alpha: 0.1)
                             : const Color(0xFFF8FAFC),
                         borderRadius: BorderRadius.circular(10),
                       ),
@@ -136,7 +148,7 @@ class _CustomerHistoryScreenState extends ConsumerState<CustomerHistoryScreen> {
                         icon: Icon(
                           Icons.calendar_today,
                           color: _selectedDate != null
-                              ? const Color(0xFF2563EB)
+                              ? ColorUtil.primary
                               : Colors.grey,
                         ),
                       ),

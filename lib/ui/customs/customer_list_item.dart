@@ -11,151 +11,204 @@ class CustomerListItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final String initial = customer.companyName.trim().isNotEmpty
+        ? customer.companyName.trim().substring(0, 1).toUpperCase()
+        : 'C';
+
+    final String formattedSales =
+        '₹ ${NumberFormat.decimalPattern('en_IN').format(customer.totalSales)}';
+    final String formattedDue =
+        '₹ ${NumberFormat.decimalPattern('en_IN').format(customer.totalDue)}';
+
     return Padding(
-      padding: const EdgeInsets.only(bottom: 16),
+      padding: const EdgeInsets.only(bottom: 14),
       child: Material(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(20),
         child: InkWell(
           onTap: onTap,
-          borderRadius: BorderRadius.circular(16),
-          child: Ink(
+          borderRadius: BorderRadius.circular(20),
+          child: Container(
+            padding: const EdgeInsets.all(18),
             decoration: BoxDecoration(
               color: Colors.white,
-              borderRadius: BorderRadius.circular(16),
-              border: const Border(
-                left: BorderSide(color: ColorUtil.darkGreen, width: 6),
-              ),
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(color: const Color(0xFFE2E8F0)),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.05),
-                  blurRadius: 10,
-                  offset: const Offset(0, 4),
+                  color: Colors.black.withValues(alpha: 0.03),
+                  blurRadius: 14,
+                  offset: const Offset(0, 6),
                 ),
               ],
             ),
-            child: Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Expanded(
-                        child: Text(
-                          customer.companyName,
-                          style: const TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                            color: Color(0xFF1E293B),
-                          ),
-                        ),
-                      ),
-                      Text(
-                        DateFormat(
-                          'dd MMM yyyy',
-                        ).format(customer.registrationDate),
-                        style: const TextStyle(
-                          fontSize: 12,
-                          color: ColorUtil.textSecondary,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 10),
-                  Row(
-                    children: [
-                      const Icon(
-                        Icons.phone_outlined,
-                        size: 16,
-                        color: Color(0xFF94A3B8),
-                      ),
-                      const SizedBox(width: 8),
-                      Text(
-                        customer.phoneNumber.isEmpty
-                            ? "Mobile not added"
-                            : customer.phoneNumber,
-                        style: const TextStyle(
-                          color: Color(0xFF64748B),
-                          fontSize: 14,
-                        ),
-                      ),
-                    ],
-                  ),
-                  if (customer.address.isNotEmpty) ...[
-                    const SizedBox(height: 6),
-                    Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Icon(
-                          Icons.location_on_outlined,
-                          size: 16,
-                          color: Color(0xFF94A3B8),
-                        ),
-                        const SizedBox(width: 8),
-                        Expanded(
-                          child: Text(
-                            customer.address,
-                            style: const TextStyle(
-                              color: Color(0xFF64748B),
-                              fontSize: 14,
-                            ),
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                  if (customer.description.isNotEmpty) ...[
-                    const SizedBox(height: 10),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Header: Initial Avatar + Customer Info + Reg Date
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
                     Container(
-                      width: double.infinity,
-                      padding: const EdgeInsets.all(12),
+                      width: 44,
+                      height: 44,
                       decoration: BoxDecoration(
-                        color: const Color(0xFFF8FAFC),
+                        gradient: ColorUtil.actionGradient,
+                        borderRadius: BorderRadius.circular(14),
+                      ),
+                      child: Center(
+                        child: Text(
+                          initial,
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.w900,
+                            fontSize: 18,
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            customer.companyName,
+                            style: const TextStyle(
+                              fontSize: 17,
+                              fontWeight: FontWeight.w800,
+                              color: Color(0xFF1E293B),
+                            ),
+                          ),
+                          const SizedBox(height: 2),
+                          Row(
+                            children: [
+                              const Icon(
+                                Icons.phone_iphone_rounded,
+                                size: 14,
+                                color: ColorUtil.primary,
+                              ),
+                              const SizedBox(width: 4),
+                              Text(
+                                customer.phoneNumber.isEmpty
+                                    ? "Mobile not added"
+                                    : customer.phoneNumber,
+                                style: const TextStyle(
+                                  color: Color(0xFF64748B),
+                                  fontSize: 12.5,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 5,
+                      ),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFF1F5F9),
                         borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: const Color(0xFFE2E8F0)),
                       ),
                       child: Text(
-                        customer.description,
-                        style: const TextStyle(
-                          color: Color(0xFF475569),
-                          height: 1.4,
+                        DateFormat('dd MMM yyyy').format(
+                          customer.registrationDate,
                         ),
-                        maxLines: 3,
-                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                          fontSize: 11,
+                          color: Color(0xFF64748B),
+                          fontWeight: FontWeight.w700,
+                        ),
                       ),
                     ),
                   ],
-                  const Padding(
-                    padding: EdgeInsets.symmetric(vertical: 12.0),
-                    child: Divider(color: Color(0xFFF1F5F9), thickness: 1),
-                  ),
+                ),
+
+                // Delivery Address if available
+                if (customer.address.trim().isNotEmpty) ...[
+                  const SizedBox(height: 12),
                   Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Icon(
+                        Icons.location_on_outlined,
+                        size: 15,
+                        color: ColorUtil.primary,
+                      ),
+                      const SizedBox(width: 6),
+                      Expanded(
+                        child: Text(
+                          customer.address,
+                          style: const TextStyle(
+                            color: Color(0xFF64748B),
+                            fontSize: 13,
+                          ),
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+
+                // Customer description if available
+                if (customer.description.trim().isNotEmpty) ...[
+                  const SizedBox(height: 10),
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFF8FAFC),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: const Color(0xFFE2E8F0)),
+                    ),
+                    child: Text(
+                      customer.description,
+                      style: const TextStyle(
+                        color: Color(0xFF475569),
+                        fontSize: 12,
+                        height: 1.4,
+                      ),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                ],
+
+                const SizedBox(height: 14),
+
+                // Financial Overview Bar
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFF8FAFC),
+                    borderRadius: BorderRadius.circular(14),
+                    border: Border.all(color: const Color(0xFFF1F5F9)),
+                  ),
+                  child: Row(
                     children: [
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             const Text(
-                              "TOTAL SALES",
+                              "Total Sales",
                               style: TextStyle(
-                                fontSize: 11,
-                                letterSpacing: 0.5,
-                                color: Color(0xFF94A3B8),
+                                fontSize: 10,
                                 fontWeight: FontWeight.bold,
+                                color: Color(0xFF94A3B8),
                               ),
                             ),
-                            const SizedBox(height: 4),
+                            const SizedBox(height: 2),
                             Text(
-                              "₹ ${NumberFormat.decimalPattern('en_IN').format(customer.totalSales)}",
+                              formattedSales,
                               style: const TextStyle(
-                                fontSize: 22,
-                                fontWeight: FontWeight.bold,
-                                color: ColorUtil.darkGreen,
+                                fontSize: 15,
+                                fontWeight: FontWeight.w900,
+                                color: ColorUtil.primary,
                               ),
                             ),
                           ],
@@ -165,22 +218,25 @@ class CustomerListItem extends StatelessWidget {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Text(
-                              "ORDERS",
-                              style: TextStyle(
-                                fontSize: 11,
-                                letterSpacing: 0.5,
-                                color: Color(0xFF94A3B8),
+                            Text(
+                              customer.totalDue > 0 ? "Due Balance" : "Orders",
+                              style: const TextStyle(
+                                fontSize: 10,
                                 fontWeight: FontWeight.bold,
+                                color: Color(0xFF94A3B8),
                               ),
                             ),
-                            const SizedBox(height: 4),
+                            const SizedBox(height: 2),
                             Text(
-                              "${customer.orderCount}",
-                              style: const TextStyle(
-                                fontSize: 22,
-                                fontWeight: FontWeight.bold,
-                                color: ColorUtil.primary,
+                              customer.totalDue > 0
+                                  ? formattedDue
+                                  : "${customer.orderCount} orders",
+                              style: TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w900,
+                                color: customer.totalDue > 0
+                                    ? ColorUtil.danger
+                                    : ColorUtil.darkGreen,
                               ),
                             ),
                           ],
@@ -188,12 +244,13 @@ class CustomerListItem extends StatelessWidget {
                       ),
                       Container(
                         padding: const EdgeInsets.symmetric(
-                          horizontal: 10,
-                          vertical: 8,
+                          horizontal: 12,
+                          vertical: 7,
                         ),
                         decoration: BoxDecoration(
-                          color: const Color(0xFFF1F5F9),
-                          borderRadius: BorderRadius.circular(10),
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: const Color(0xFFE2E8F0)),
                         ),
                         child: const Row(
                           mainAxisSize: MainAxisSize.min,
@@ -201,15 +258,15 @@ class CustomerListItem extends StatelessWidget {
                             Text(
                               "View",
                               style: TextStyle(
-                                color: Color(0xFF2563EB),
-                                fontWeight: FontWeight.w600,
+                                color: ColorUtil.primary,
+                                fontWeight: FontWeight.w800,
                                 fontSize: 12,
                               ),
                             ),
                             SizedBox(width: 4),
                             Icon(
                               Icons.arrow_forward_rounded,
-                              color: Color(0xFF2563EB),
+                              color: ColorUtil.primary,
                               size: 14,
                             ),
                           ],
@@ -217,8 +274,8 @@ class CustomerListItem extends StatelessWidget {
                       ),
                     ],
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
           ),
         ),

@@ -86,23 +86,44 @@ List<CustomerModel> buildCustomerProfiles(
         customer;
   }
 
-  for (final order in orders) {
+  // Sort orders chronologically ascending so when iterating, newer orders update latest info
+  final sortedOrders = [...orders]..sort((a, b) => a.createdAt.compareTo(b.createdAt));
+
+  for (final order in sortedOrders) {
+    final nameKey = order.name.trim().toLowerCase();
     final exactKey = _customerKey(order.name, order.customerMobile);
     final fallbackKey = _customerKey(order.name, '');
-    final existing =
-        customerMap[exactKey] ??
-        (order.customerMobile.isNotEmpty ? customerMap[fallbackKey] : null);
 
-    final mergedOrders = [...(existing?.orders ?? const <OrderModel>[]), order]
-      ..sort((a, b) => b.orderDate.compareTo(a.orderDate));
+    CustomerModel? existing = customerMap[exactKey] ?? customerMap[fallbackKey];
+    if (existing == null) {
+      for (final c in customerMap.values) {
+        if (c.companyName.trim().toLowerCase() == nameKey ||
+            (order.customerMobile.isNotEmpty && c.phoneNumber == order.customerMobile)) {
+          existing = c;
+          break;
+        }
+      }
+    }
 
-    customerMap[exactKey] = CustomerModel(
+    final keyToUse = existing != null
+        ? _customerKey(existing.companyName, existing.phoneNumber)
+        : exactKey;
+
+    final existingOrders = existing?.orders ?? const <OrderModel>[];
+    final mergedOrders = [...existingOrders, order]
+      ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
+
+    final addressToUse = (existing?.address.isNotEmpty ?? false)
+        ? existing!.address
+        : (order.address.isNotEmpty ? order.address : '');
+
+    customerMap[keyToUse] = CustomerModel(
       id: existing?.id,
-      companyName: order.name,
+      companyName: existing?.companyName.isNotEmpty ?? false ? existing!.companyName : order.name,
       phoneNumber: order.customerMobile.isNotEmpty
           ? order.customerMobile
-          : existing?.phoneNumber ?? '',
-      address: existing?.address ?? '',
+          : (existing?.phoneNumber ?? ''),
+      address: addressToUse,
       description: existing?.description ?? '',
       totalSales: (existing?.totalSales ?? 0) + order.orderValue,
       totalPaid: (existing?.totalPaid ?? 0) + order.paidAmount,
@@ -110,21 +131,28 @@ List<CustomerModel> buildCustomerProfiles(
       orderCount: mergedOrders.length,
       registrationDate: _earlierDate(
         existing?.registrationDate,
-        order.orderDate,
+        order.createdAt,
       ),
-      lastOrderDate: _laterDate(existing?.lastOrderDate, order.orderDate),
+      lastOrderDate: _laterDate(existing?.lastOrderDate, order.createdAt),
       orders: mergedOrders,
     );
 
-    if (exactKey != fallbackKey) {
+    if (keyToUse != exactKey && customerMap.containsKey(exactKey)) {
+      customerMap.remove(exactKey);
+    }
+    if (keyToUse != fallbackKey && customerMap.containsKey(fallbackKey)) {
       customerMap.remove(fallbackKey);
     }
   }
 
   final customers = customerMap.values.toList()
     ..sort((a, b) {
-      final left = a.lastOrderDate ?? a.registrationDate;
-      final right = b.lastOrderDate ?? b.registrationDate;
+      final left = a.orders.isNotEmpty
+          ? a.orders.first.createdAt
+          : (a.lastOrderDate ?? a.registrationDate);
+      final right = b.orders.isNotEmpty
+          ? b.orders.first.createdAt
+          : (b.lastOrderDate ?? b.registrationDate);
       return right.compareTo(left);
     });
 

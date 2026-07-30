@@ -147,8 +147,12 @@ class PdfExportService {
 
           return _isWithinRange(customer.registrationDate, start, end);
         }).toList()..sort((left, right) {
-          final leftDate = left.lastOrderDate ?? left.registrationDate;
-          final rightDate = right.lastOrderDate ?? right.registrationDate;
+          final leftDate = left.orders.isNotEmpty
+              ? left.orders.first.createdAt
+              : (left.lastOrderDate ?? left.registrationDate);
+          final rightDate = right.orders.isNotEmpty
+              ? right.orders.first.createdAt
+              : (right.lastOrderDate ?? right.registrationDate);
           return rightDate.compareTo(leftDate);
         });
 
@@ -437,16 +441,17 @@ class PdfExportService {
   }
 
   List<pw.Widget> _buildOrdersSection(List<OrderModel> orders) {
-    final totalValue = orders.fold<int>(
+    final sortedOrders = [...orders]..sort((a, b) => b.createdAt.compareTo(a.createdAt));
+    final totalValue = sortedOrders.fold<int>(
       0,
       (sum, order) => sum + order.orderValue,
     );
-    final totalPaid = orders.fold<int>(
+    final totalPaid = sortedOrders.fold<int>(
       0,
       (sum, order) => sum + order.paidAmount,
     );
-    final totalDue = orders.fold<int>(0, (sum, order) => sum + order.dueAmount);
-    final deliveredCount = orders.where((order) => order.isDelivered).length;
+    final totalDue = sortedOrders.fold<int>(0, (sum, order) => sum + order.dueAmount);
+    final deliveredCount = sortedOrders.where((order) => order.isDelivered).length;
 
     return [
       _buildSectionHeader(
@@ -456,14 +461,14 @@ class PdfExportService {
       ),
       pw.SizedBox(height: 12),
       _buildMetricGrid([
-        _MetricData(label: 'Orders', value: '${orders.length}'),
+        _MetricData(label: 'Orders', value: '${sortedOrders.length}'),
         _MetricData(label: 'Order value', value: _formatCurrency(totalValue)),
         _MetricData(label: 'Collected', value: _formatCurrency(totalPaid)),
         _MetricData(label: 'Outstanding', value: _formatCurrency(totalDue)),
         _MetricData(label: 'Delivered', value: '$deliveredCount'),
       ]),
       pw.SizedBox(height: 14),
-      if (orders.isEmpty)
+      if (sortedOrders.isEmpty)
         _buildEmptyState('No orders found for the selected duration.')
       else
         _buildTable(
@@ -478,7 +483,7 @@ class PdfExportService {
             'Delivery',
             'Payment',
           ],
-          data: orders.map((order) {
+          data: sortedOrders.map((order) {
             return [
               order.orderId,
               _buildCustomerLabel(order),
@@ -546,6 +551,15 @@ class PdfExportService {
             'Address',
           ],
           data: customers.map((customer) {
+            final displayAddr = customer.address.trim().isNotEmpty
+                ? customer.address.trim()
+                : (customer.orders.any((o) => o.address.trim().isNotEmpty)
+                    ? customer.orders
+                        .firstWhere((o) => o.address.trim().isNotEmpty)
+                        .address
+                        .trim()
+                    : '-');
+
             return [
               customer.companyName,
               customer.phoneNumber.isEmpty ? '-' : customer.phoneNumber,
@@ -553,7 +567,7 @@ class PdfExportService {
               '${customer.orderCount}',
               _formatCurrency(customer.totalSales),
               _formatCurrency(customer.totalDue),
-              customer.address.trim().isEmpty ? '-' : customer.address.trim(),
+              displayAddr,
             ];
           }).toList(),
           columnWidths: {
@@ -717,11 +731,14 @@ class PdfExportService {
   }
 
   String _buildCustomerLabel(OrderModel order) {
-    if (order.customerMobile.trim().isEmpty) {
-      return order.name;
+    final buffer = StringBuffer(order.name);
+    if (order.customerMobile.trim().isNotEmpty) {
+      buffer.write(' (${order.customerMobile.trim()})');
     }
-
-    return '${order.name} (${order.customerMobile})';
+    if (order.address.trim().isNotEmpty) {
+      buffer.write('\nAddr: ${order.address.trim()}');
+    }
+    return buffer.toString();
   }
 
   String _formatDate(DateTime date) {

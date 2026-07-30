@@ -4,7 +4,7 @@ import 'package:flutter_projects/repository/inventory_repository.dart';
 import 'package:flutter_projects/ui/add_sections/add_stocks.dart';
 import 'package:flutter_projects/ui/customs/appbar.dart';
 import 'package:flutter_projects/ui/customs/button.dart';
-import 'package:flutter_projects/ui/dashborad.dart';
+import 'package:flutter_projects/ui/dashboard.dart';
 import 'package:flutter_projects/util/color_util.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
@@ -43,7 +43,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               20,
               20,
               20,
-              Dashborad.contentBottomSpacing,
+              Dashboard.contentBottomSpacing,
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,

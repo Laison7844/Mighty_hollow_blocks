@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_projects/model/customer_model.dart';
 import 'package:flutter_projects/model/order_model.dart';
 import 'package:flutter_projects/ui/customs/appbar.dart';
+import 'package:flutter_projects/ui/orders/order_history_screen.dart';
 import 'package:flutter_projects/util/color_util.dart';
 import 'package:intl/intl.dart';
 
@@ -21,7 +22,7 @@ class CustomerDetailScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final orders = [...customer.orders]
-      ..sort((a, b) => b.orderDate.compareTo(a.orderDate));
+      ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
 
     return Scaffold(
       backgroundColor: const Color(0xFFF7FAFC),
@@ -48,12 +49,47 @@ class CustomerDetailScreen extends StatelessWidget {
               formatCurrency: _formatCurrency,
             ),
             const SizedBox(height: 24),
-            _SectionIntro(
-              title: 'Orders and payments',
-              subtitle:
-                  'Each card shows the order value, collection progress, delivery status and payment history.',
-              trailing: '${orders.length} orders',
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Expanded(
+                  child: _SectionIntro(
+                    title: 'Orders and payments',
+                    trailing: '${orders.length} orders',
+                  ),
+                ),
+              ],
             ),
+            if (orders.length > 1) ...[
+              const SizedBox(height: 8),
+              Align(
+                alignment: Alignment.centerRight,
+                child: TextButton.icon(
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => OrderHistoryScreen(
+                          initialSearchQuery: customer.companyName,
+                        ),
+                      ),
+                    );
+                  },
+                  icon: const Icon(
+                    Icons.arrow_forward_rounded,
+                    size: 16,
+                    color: ColorUtil.primary,
+                  ),
+                  label: Text(
+                    "View All Orders for ${customer.companyName}",
+                    style: const TextStyle(
+                      color: ColorUtil.primary,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ),
+            ],
             const SizedBox(height: 14),
             if (orders.isEmpty)
               const _EmptyState(
@@ -195,6 +231,14 @@ class _CustomerProfileSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final String displayAddress = customer.address.trim().isNotEmpty
+        ? customer.address
+        : (customer.orders.any((o) => o.address.trim().isNotEmpty)
+            ? customer.orders
+                .firstWhere((o) => o.address.trim().isNotEmpty)
+                .address
+            : '');
+
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(22),
@@ -213,52 +257,320 @@ class _CustomerProfileSection extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const _SectionIntro(
-            title: 'Customer profile',
-            subtitle:
-                'Basic contact details and account-level notes for this customer.',
-          ),
-          const SizedBox(height: 18),
-          Wrap(
-            spacing: 12,
-            runSpacing: 12,
+          Row(
             children: [
-              _ProfileStatCard(
-                icon: Icons.phone_outlined,
-                label: 'Phone',
-                value: customer.phoneNumber.isEmpty
-                    ? 'Not available'
-                    : customer.phoneNumber,
+              Container(
+                width: 48,
+                height: 48,
+                decoration: BoxDecoration(
+                  gradient: ColorUtil.actionGradient,
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: Center(
+                  child: Text(
+                    customer.companyName.trim().isNotEmpty
+                        ? customer.companyName.trim().substring(0, 1).toUpperCase()
+                        : 'C',
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w900,
+                      fontSize: 22,
+                    ),
+                  ),
+                ),
               ),
-              _ProfileStatCard(
-                icon: Icons.calendar_month_outlined,
-                label: 'Registered',
-                value: formatDate(customer.registrationDate),
-              ),
-              _ProfileStatCard(
-                icon: Icons.payments_outlined,
-                label: 'Outstanding due',
-                value: formatCurrency(customer.totalDue),
-                highlight: customer.totalDue > 0,
+              const SizedBox(width: 14),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      customer.companyName,
+                      style: const TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.w900,
+                        color: ColorUtil.textPrimary,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      'Registered ${formatDate(customer.registrationDate)}',
+                      style: const TextStyle(
+                        fontSize: 12,
+                        color: ColorUtil.textSecondary,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ],
           ),
-          if (customer.address.trim().isNotEmpty) ...[
-            const SizedBox(height: 16),
-            _DetailBlock(
-              icon: Icons.location_on_outlined,
-              title: 'Address',
-              text: customer.address,
+          const SizedBox(height: 18),
+          Row(
+            children: [
+              Expanded(
+                child: Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFF8FAFC),
+                    borderRadius: BorderRadius.circular(14),
+                    border: Border.all(color: const Color(0xFFE2E8F0)),
+                  ),
+                  child: Row(
+                    children: [
+                      const Icon(
+                        Icons.phone_iphone_rounded,
+                        size: 18,
+                        color: ColorUtil.primary,
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text(
+                              "Mobile",
+                              style: TextStyle(
+                                fontSize: 10,
+                                fontWeight: FontWeight.bold,
+                                color: ColorUtil.textSecondary,
+                              ),
+                            ),
+                            Text(
+                              customer.phoneNumber.isEmpty
+                                  ? "Not added"
+                                  : customer.phoneNumber,
+                              style: const TextStyle(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w700,
+                                color: ColorUtil.textPrimary,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFF8FAFC),
+                    borderRadius: BorderRadius.circular(14),
+                    border: Border.all(color: const Color(0xFFE2E8F0)),
+                  ),
+                  child: Row(
+                    children: [
+                      const Icon(
+                        Icons.receipt_long_outlined,
+                        size: 18,
+                        color: ColorUtil.primary,
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text(
+                              "Orders",
+                              style: TextStyle(
+                                fontSize: 10,
+                                fontWeight: FontWeight.bold,
+                                color: ColorUtil.textSecondary,
+                              ),
+                            ),
+                            Text(
+                              "${customer.orderCount} orders",
+                              style: const TextStyle(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w700,
+                                color: ColorUtil.textPrimary,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+          if (displayAddress.trim().isNotEmpty) ...[
+            const SizedBox(height: 12),
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: const Color(0xFFF8FAFC),
+                borderRadius: BorderRadius.circular(14),
+                border: Border.all(color: const Color(0xFFE2E8F0)),
+              ),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Icon(
+                    Icons.location_on_outlined,
+                    size: 18,
+                    color: ColorUtil.primary,
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          "Address",
+                          style: TextStyle(
+                            fontSize: 10,
+                            fontWeight: FontWeight.bold,
+                            color: ColorUtil.textSecondary,
+                          ),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          displayAddress,
+                          style: const TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w600,
+                            color: ColorUtil.textPrimary,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
             ),
           ],
           if (customer.description.trim().isNotEmpty) ...[
-            const SizedBox(height: 16),
-            _DetailBlock(
-              icon: Icons.notes_rounded,
-              title: 'Customer notes',
-              text: customer.description,
+            const SizedBox(height: 12),
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: const Color(0xFFF8FAFC),
+                borderRadius: BorderRadius.circular(14),
+                border: Border.all(color: const Color(0xFFE2E8F0)),
+              ),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Icon(
+                    Icons.sticky_note_2_outlined,
+                    size: 18,
+                    color: ColorUtil.primary,
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          "Customer Notes",
+                          style: TextStyle(
+                            fontSize: 10,
+                            fontWeight: FontWeight.bold,
+                            color: ColorUtil.textSecondary,
+                          ),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          customer.description,
+                          style: const TextStyle(
+                            fontSize: 13,
+                            color: ColorUtil.textPrimary,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
             ),
           ],
+          const SizedBox(height: 18),
+          Row(
+            children: [
+              Expanded(
+                child: _FinancialStatCard(
+                  label: "Total Sales",
+                  value: formatCurrency(customer.totalSales),
+                  accentColor: ColorUtil.primary,
+                  bgColor: const Color(0xFFE0F2FE),
+                ),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: _FinancialStatCard(
+                  label: "Paid Collected",
+                  value: formatCurrency(customer.totalPaid),
+                  accentColor: ColorUtil.darkGreen,
+                  bgColor: const Color(0xFFDCFCE7),
+                ),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: _FinancialStatCard(
+                  label: "Outstanding",
+                  value: formatCurrency(customer.totalDue),
+                  accentColor: customer.totalDue > 0 ? ColorUtil.danger : ColorUtil.darkGreen,
+                  bgColor: customer.totalDue > 0 ? const Color(0xFFFEE2E2) : const Color(0xFFDCFCE7),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _FinancialStatCard extends StatelessWidget {
+  final String label;
+  final String value;
+  final Color accentColor;
+  final Color bgColor;
+
+  const _FinancialStatCard({
+    required this.label,
+    required this.value,
+    required this.accentColor,
+    required this.bgColor,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: bgColor,
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            label,
+            style: const TextStyle(
+              fontSize: 10,
+              fontWeight: FontWeight.bold,
+              color: ColorUtil.textSecondary,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            value,
+            style: TextStyle(
+              fontSize: 13,
+              fontWeight: FontWeight.w900,
+              color: accentColor,
+            ),
+          ),
         ],
       ),
     );
@@ -418,6 +730,22 @@ class _OrderActivityCard extends StatelessWidget {
                       ? 'Delivered on ${formatDate(order.deliveryDateValue!)}'
                       : 'Delivery pending',
                 ),
+                if (order.address.trim().isNotEmpty) ...[
+                  const SizedBox(height: 12),
+                  _InfoRow(
+                    icon: Icons.location_on_outlined,
+                    label: 'Delivery address',
+                    value: order.address,
+                  ),
+                ],
+                if (order.deliveryNotes.trim().isNotEmpty) ...[
+                  const SizedBox(height: 12),
+                  _InfoRow(
+                    icon: Icons.sticky_note_2_outlined,
+                    label: 'Delivery note',
+                    value: order.deliveryNotes,
+                  ),
+                ],
                 if (order.customerMobile.trim().isNotEmpty) ...[
                   const SizedBox(height: 12),
                   _InfoRow(
@@ -511,12 +839,38 @@ class _OrderActivityCard extends StatelessWidget {
                             ),
                             const SizedBox(width: 12),
                             Expanded(
-                              child: Text(
-                                formatDate(payment.date),
-                                style: const TextStyle(
-                                  color: ColorUtil.textPrimary,
-                                  fontWeight: FontWeight.w700,
-                                ),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    formatDate(payment.date),
+                                    style: const TextStyle(
+                                      color: ColorUtil.textPrimary,
+                                      fontWeight: FontWeight.w700,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 2),
+                                  Row(
+                                    children: [
+                                      Icon(
+                                        payment.paymentMode == 'Online payment'
+                                            ? Icons.account_balance_outlined
+                                            : Icons.payments_outlined,
+                                        size: 13,
+                                        color: ColorUtil.textSecondary,
+                                      ),
+                                      const SizedBox(width: 4),
+                                      Text(
+                                        payment.paymentMode,
+                                        style: const TextStyle(
+                                          color: ColorUtil.textSecondary,
+                                          fontSize: 11,
+                                          fontWeight: FontWeight.w500,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ],
                               ),
                             ),
                             Text(
@@ -541,14 +895,9 @@ class _OrderActivityCard extends StatelessWidget {
 }
 
 class _SectionIntro extends StatelessWidget {
-  const _SectionIntro({
-    required this.title,
-    required this.subtitle,
-    this.trailing,
-  });
+  const _SectionIntro({required this.title, this.trailing});
 
   final String title;
-  final String subtitle;
   final String? trailing;
 
   @override
@@ -566,14 +915,6 @@ class _SectionIntro extends StatelessWidget {
                   fontSize: 20,
                   fontWeight: FontWeight.w900,
                   color: ColorUtil.textPrimary,
-                ),
-              ),
-              const SizedBox(height: 4),
-              Text(
-                subtitle,
-                style: const TextStyle(
-                  color: ColorUtil.textSecondary,
-                  height: 1.4,
                 ),
               ),
             ],
@@ -641,53 +982,7 @@ class _HeroMetric extends StatelessWidget {
   }
 }
 
-class _ProfileStatCard extends StatelessWidget {
-  const _ProfileStatCard({
-    required this.icon,
-    required this.label,
-    required this.value,
-    this.highlight = false,
-  });
 
-  final IconData icon;
-  final String label;
-  final String value;
-  final bool highlight;
-
-  @override
-  Widget build(BuildContext context) {
-    final accent = highlight ? ColorUtil.danger : ColorUtil.primary;
-
-    return Container(
-      width: 170,
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: highlight ? const Color(0xFFFFF4F2) : ColorUtil.surfaceMuted,
-        borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: ColorUtil.border),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Icon(icon, color: accent, size: 20),
-          const SizedBox(height: 10),
-          Text(
-            label,
-            style: const TextStyle(
-              color: ColorUtil.textSecondary,
-              fontWeight: FontWeight.w700,
-            ),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            value,
-            style: TextStyle(color: accent, fontWeight: FontWeight.w900),
-          ),
-        ],
-      ),
-    );
-  }
-}
 
 class _OrderMetricCard extends StatelessWidget {
   const _OrderMetricCard({

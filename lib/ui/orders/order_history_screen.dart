@@ -7,7 +7,8 @@ import 'package:flutter_projects/util/color_util.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class OrderHistoryScreen extends ConsumerStatefulWidget {
-  const OrderHistoryScreen({super.key});
+  final String? initialSearchQuery;
+  const OrderHistoryScreen({super.key, this.initialSearchQuery});
 
   static String path = "/order-history";
 
@@ -23,6 +24,10 @@ class _OrderHistoryScreenState extends ConsumerState<OrderHistoryScreen> {
   @override
   void initState() {
     super.initState();
+    if (widget.initialSearchQuery != null && widget.initialSearchQuery!.isNotEmpty) {
+      _searchController.text = widget.initialSearchQuery!;
+      _searchQuery = widget.initialSearchQuery!.toLowerCase();
+    }
     _searchController.addListener(_onSearchChanged);
   }
 
@@ -126,7 +131,7 @@ class _OrderHistoryScreenState extends ConsumerState<OrderHistoryScreen> {
                     Container(
                       decoration: BoxDecoration(
                         color: _selectedDate != null
-                            ? const Color(0xFF2563EB).withValues(alpha: 0.1)
+                            ? ColorUtil.primary.withValues(alpha: 0.1)
                             : const Color(0xFFF8FAFC),
                         borderRadius: BorderRadius.circular(10),
                       ),
@@ -135,7 +140,7 @@ class _OrderHistoryScreenState extends ConsumerState<OrderHistoryScreen> {
                         icon: Icon(
                           Icons.calendar_today,
                           color: _selectedDate != null
-                              ? const Color(0xFF2563EB)
+                              ? ColorUtil.primary
                               : Colors.grey,
                         ),
                       ),

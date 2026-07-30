@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_projects/repository/customer_repository.dart';
 import 'package:flutter_projects/ui/add_sections/add_customer.dart';
-import 'package:flutter_projects/ui/dashborad.dart';
+import 'package:flutter_projects/ui/dashboard.dart';
 import 'package:flutter_projects/ui/customer_detail_screen.dart';
 import 'package:flutter_projects/ui/customer_history_screen.dart';
 import 'package:flutter_projects/ui/customs/appbar.dart';
@@ -44,7 +44,7 @@ class _CustomerScreenState extends ConsumerState<CustomerScreen> {
               20,
               20,
               20,
-              Dashborad.contentBottomSpacing,
+              Dashboard.contentBottomSpacing,
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
