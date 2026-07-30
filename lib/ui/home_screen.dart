@@ -7,6 +7,7 @@ import 'package:flutter_projects/ui/customs/button.dart';
 import 'package:flutter_projects/ui/dashborad.dart';
 import 'package:flutter_projects/util/color_util.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:intl/intl.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
@@ -54,7 +55,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 const SizedBox(height: 24),
                 _SectionHeader(
                   title: 'Stock overview',
-                  subtitle: 'Tap any card to add fresh stock for that block.',
+                  subtitle:
+                      'Tap any card to add or delete stock for that block.',
                 ),
                 const SizedBox(height: 14),
                 _buildInventoryCard(
@@ -136,7 +138,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           ),
           const SizedBox(height: 20),
           Text(
-            '$totalUnits',
+            NumberFormat.decimalPattern('en_IN').format(totalUnits),
             style: const TextStyle(
               fontSize: 42,
               fontWeight: FontWeight.w900,
@@ -275,23 +277,31 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   ],
                 ),
                 const SizedBox(height: 24),
-                Text(
-                  '$units',
-                  style: const TextStyle(
-                    fontSize: 38,
-                    height: 1,
-                    fontWeight: FontWeight.w900,
-                    color: ColorUtil.textPrimary,
-                  ),
-                ),
-                const SizedBox(height: 6),
-                const Text(
-                  'ready units',
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: ColorUtil.textSecondary,
-                    fontWeight: FontWeight.w600,
-                  ),
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    Text(
+                      NumberFormat.decimalPattern('en_IN').format(units),
+                      style: const TextStyle(
+                        fontSize: 38,
+                        height: 1,
+                        fontWeight: FontWeight.w900,
+                        color: ColorUtil.textPrimary,
+                      ),
+                    ),
+                    const SizedBox(width: 6),
+                    const Padding(
+                      padding: EdgeInsets.only(bottom: 5),
+                      child: Text(
+                        'units',
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: ColorUtil.textSecondary,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
                 const SizedBox(height: 20),
                 Row(
@@ -307,7 +317,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     Expanded(
                       child: _InfoPill(
                         icon: Icons.add_circle_outline_rounded,
-                        label: 'Add stock',
+                        label: 'Manage stock',
                         color: color,
                       ),
                     ),

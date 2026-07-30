@@ -4,6 +4,7 @@ import 'package:flutter_projects/repository/customer_repository.dart';
 import 'package:flutter_projects/ui/customer_detail_screen.dart';
 import 'package:flutter_projects/ui/customs/appbar.dart';
 import 'package:flutter_projects/ui/customs/customer_list_item.dart';
+import 'package:flutter_projects/util/color_util.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class CustomerHistoryScreen extends ConsumerStatefulWidget {
@@ -81,13 +82,21 @@ class _CustomerHistoryScreenState extends ConsumerState<CustomerHistoryScreen> {
     final customerAsync = ref.watch(customerStreamProvider);
 
     return Scaffold(
-      appBar: CustomAppBar(title: "Customer History"),
-      backgroundColor: const Color(0xFFF8FAFC),
+      appBar: const CustomAppBar(
+        title: "Customer History",
+        subtitle: "Browse and filter all customer records.",
+      ),
+      backgroundColor: ColorUtil.background,
       body: Column(
         children: [
           Container(
             padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
-            color: Colors.white,
+            margin: const EdgeInsets.fromLTRB(16, 16, 16, 0),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(color: ColorUtil.border),
+            ),
             child: Column(
               children: [
                 Row(
@@ -106,7 +115,7 @@ class _CustomerHistoryScreenState extends ConsumerState<CustomerHistoryScreen> {
                             horizontal: 16,
                           ),
                           filled: true,
-                          fillColor: const Color(0xFFF1F5F9),
+                          fillColor: const Color(0xFFF8FAFC),
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(10),
                             borderSide: BorderSide.none,
@@ -119,7 +128,7 @@ class _CustomerHistoryScreenState extends ConsumerState<CustomerHistoryScreen> {
                       decoration: BoxDecoration(
                         color: _selectedDate != null
                             ? const Color(0xFF2563EB).withValues(alpha: 0.1)
-                            : const Color(0xFFF1F5F9),
+                            : const Color(0xFFF8FAFC),
                         borderRadius: BorderRadius.circular(10),
                       ),
                       child: IconButton(
@@ -158,6 +167,7 @@ class _CustomerHistoryScreenState extends ConsumerState<CustomerHistoryScreen> {
               ],
             ),
           ),
+          const SizedBox(height: 12),
           Expanded(
             child: customerAsync.when(
               data: (customers) {

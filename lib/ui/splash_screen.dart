@@ -64,7 +64,10 @@ class _SplashScreenState extends State<SplashScreen> {
                     duration: const Duration(milliseconds: 900),
                     curve: Curves.easeOutCubic,
                     builder: (context, value, child) {
-                      return Transform.scale(scale: value, child: child);
+                      return Opacity(
+                        opacity: value.clamp(0, 1),
+                        child: Transform.scale(scale: value, child: child),
+                      );
                     },
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
@@ -143,6 +146,15 @@ class _SplashScreenState extends State<SplashScreen> {
                                 ),
                               ),
                             ],
+                          ),
+                        ),
+                        const SizedBox(height: 18),
+                        const Text(
+                          'Operational Suite',
+                          style: TextStyle(
+                            color: Color(0xFFD7E6FF),
+                            fontWeight: FontWeight.w600,
+                            letterSpacing: 0.4,
                           ),
                         ),
                       ],

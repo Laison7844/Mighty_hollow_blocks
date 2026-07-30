@@ -18,10 +18,20 @@ class ProductionListItem extends ConsumerStatefulWidget {
 class _ProductionListItemState extends ConsumerState<ProductionListItem> {
   bool _showDescription = false;
 
+  void _toggleDescription() {
+    setState(() {
+      _showDescription = !_showDescription;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     final production = widget.production;
     final hasDescription = production.description.trim().isNotEmpty;
+    final isNegativeEntry = production.totalProduction < 0;
+    final totalColor = isNegativeEntry
+        ? ColorUtil.danger
+        : const Color(0xFF1E293B);
 
     return Dismissible(
       key: Key(production.id ?? DateTime.now().toIso8601String()),
@@ -99,63 +109,65 @@ class _ProductionListItemState extends ConsumerState<ProductionListItem> {
         child: Material(
           color: Colors.transparent,
           child: InkWell(
-            onTap: hasDescription
-                ? () {
-                    setState(() {
-                      _showDescription = !_showDescription;
-                    });
-                  }
-                : null,
+            onTap: hasDescription ? _toggleDescription : null,
             borderRadius: BorderRadius.circular(16),
             child: Padding(
               padding: const EdgeInsets.all(20),
               child: Column(
                 children: [
                   Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Row(
-                        children: [
-                          Container(
-                            padding: const EdgeInsets.all(10),
-                            decoration: BoxDecoration(
-                              color: Colors.blue.withValues(alpha: 0.1),
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: const Icon(
-                              Icons.calendar_today_rounded,
-                              color: Colors.blue,
-                              size: 20,
-                            ),
-                          ),
-                          const SizedBox(width: 12),
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                DateFormat(
-                                  "MMM dd, yyyy",
-                                ).format(production.date),
-                                style: const TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.bold,
-                                  color: Color(0xFF1E293B),
-                                ),
+                      Expanded(
+                        child: Row(
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.all(10),
+                              decoration: BoxDecoration(
+                                color: Colors.blue.withValues(alpha: 0.1),
+                                borderRadius: BorderRadius.circular(12),
                               ),
-                              Text(
-                                hasDescription
-                                    ? "Production Log • tap to view notes"
-                                    : "Production Log",
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  color: Colors.grey.shade500,
-                                  fontWeight: FontWeight.w500,
-                                ),
+                              child: const Icon(
+                                Icons.calendar_today_rounded,
+                                color: Colors.blue,
+                                size: 20,
                               ),
-                            ],
-                          ),
-                        ],
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    DateFormat(
+                                      "MMM dd, yyyy",
+                                    ).format(production.date),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: const TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.bold,
+                                      color: Color(0xFF1E293B),
+                                    ),
+                                  ),
+                                  Text(
+                                    hasDescription
+                                        ? "Production Log"
+                                        : "Production Log",
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      color: Colors.grey.shade500,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
+                      const SizedBox(width: 8),
                       Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
@@ -164,15 +176,17 @@ class _ProductionListItemState extends ConsumerState<ProductionListItem> {
                             children: [
                               Text(
                                 "${production.totalProduction}",
-                                style: const TextStyle(
+                                style: TextStyle(
                                   fontSize: 20,
                                   fontWeight: FontWeight.w800,
-                                  color: Color(0xFF1E293B),
+                                  color: totalColor,
                                 ),
                               ),
-                              const Text(
-                                "Total Blocks",
-                                style: TextStyle(
+                              Text(
+                                isNegativeEntry
+                                    ? "Stock Removed"
+                                    : "Total Blocks",
+                                style: const TextStyle(
                                   fontSize: 12,
                                   color: Colors.grey,
                                   fontWeight: FontWeight.w600,
@@ -223,6 +237,53 @@ class _ProductionListItemState extends ConsumerState<ProductionListItem> {
                       ),
                     ],
                   ),
+                  if (hasDescription) ...[
+                    const SizedBox(height: 16),
+                    InkWell(
+                      onTap: _toggleDescription,
+                      borderRadius: BorderRadius.circular(12),
+                      child: Ink(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 10,
+                        ),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFF8FAFC),
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: const Color(0xFFE2E8F0)),
+                        ),
+                        child: Row(
+                          children: [
+                            const Icon(
+                              Icons.notes_rounded,
+                              size: 18,
+                              color: ColorUtil.primary,
+                            ),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: Text(
+                                _showDescription
+                                    ? "Hide description"
+                                    : "View description",
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.w700,
+                                  color: ColorUtil.textPrimary,
+                                ),
+                              ),
+                            ),
+                            AnimatedRotation(
+                              turns: _showDescription ? 0.5 : 0,
+                              duration: const Duration(milliseconds: 180),
+                              child: const Icon(
+                                Icons.keyboard_arrow_down_rounded,
+                                color: ColorUtil.textSecondary,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
                   AnimatedCrossFade(
                     firstChild: const SizedBox.shrink(),
                     secondChild: Padding(

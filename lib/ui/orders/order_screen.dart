@@ -9,6 +9,7 @@ import 'package:flutter_projects/ui/orders/order_history_screen.dart';
 import 'package:flutter_projects/util/color_util.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:intl/intl.dart';
 
 class OrdersScreen extends ConsumerStatefulWidget {
   const OrdersScreen({super.key});
@@ -163,7 +164,8 @@ class _OrdersSummaryCard extends StatelessWidget {
               Expanded(
                 child: _MetricCard(
                   label: "Due collection",
-                  value: "₹ $pendingValue",
+                  value:
+                      "₹ ${NumberFormat.decimalPattern('en_IN').format(pendingValue)}",
                 ),
               ),
             ],

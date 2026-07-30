@@ -1,28 +1,28 @@
 import 'package:flutter/material.dart';
 
 class ColorUtil {
-  static const Color blurBorder = Color(0xFF163F7A);
+  static const Color blurBorder = Color(0xFF3A3A3A);
   static const Color darkGreen = Color(0xFF1F8A47);
 
-  static const Color primary = Color(0xFF163F7A);
-  static const Color primaryDark = Color(0xFF0B2446);
-  static const Color accent = Color(0xFFD9A441);
-  static const Color background = Color(0xFFF3F7FB);
+  static const Color primary = Color(0xFF0284C7); // Light Blue 600
+  static const Color primaryDark = Color(0xFF0369A1); // Light Blue 700
+  static const Color accent = Color(0xFF38BDF8); // Light Blue 400
+  static const Color background = Color(0xFFF0F9FF); // Sky 50
   static const Color surface = Color(0xFFFFFFFF);
-  static const Color surfaceMuted = Color(0xFFF8FBFF);
-  static const Color border = Color(0xFFD7E3F2);
-  static const Color textPrimary = Color(0xFF102033);
-  static const Color textSecondary = Color(0xFF5F7188);
-  static const Color danger = Color(0xFFD15B57);
+  static const Color surfaceMuted = Color(0xFFE0F2FE); // Sky 100
+  static const Color border = Color(0xFFBAE6FD); // Sky 200
+  static const Color textPrimary = Color(0xFF0F172A); // Slate 900
+  static const Color textSecondary = Color(0xFF64748B); // Slate 500
+  static const Color danger = Color(0xFFEF4444); // Red 500
 
   static const LinearGradient heroGradient = LinearGradient(
-    colors: [Color(0xFF0F2D59), Color(0xFF1D5DB6)],
+    colors: [Color(0xFF0369A1), Color(0xFF0EA5E9)], // Light Blue 700 to Sky 500
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
   );
 
   static const LinearGradient actionGradient = LinearGradient(
-    colors: [Color(0xFF1B4F97), Color(0xFF2B72D6)],
+    colors: [Color(0xFF0284C7), Color(0xFF38BDF8)], // Light Blue 600 to 400
     begin: Alignment.centerLeft,
     end: Alignment.centerRight,
   );
@@ -41,11 +41,11 @@ class ColorUtil {
   static Color inventoryTint(int type) {
     switch (type) {
       case 4:
-        return const Color(0xFFE9F1FF);
+        return const Color(0xFFF2F2F2);
       case 6:
-        return const Color(0xFFEAF8EF);
+        return const Color(0xFFEDEDED);
       default:
-        return const Color(0xFFFFF7E7);
+        return const Color(0xFFF7F7F7);
     }
   }
 }

@@ -10,6 +10,7 @@ import 'package:flutter_projects/ui/customs/customer_list_item.dart';
 import 'package:flutter_projects/util/color_util.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:intl/intl.dart';
 
 class CustomerScreen extends ConsumerStatefulWidget {
   const CustomerScreen({super.key});
@@ -50,14 +51,17 @@ class _CustomerScreenState extends ConsumerState<CustomerScreen> {
               children: [
                 _SummaryCard(
                   title: 'Customer book',
-                  value: '${customers.length}',
+                  value: NumberFormat.decimalPattern(
+                    'en_IN',
+                  ).format(customers.length),
                   description: 'registered companies',
                   secondaryLabel: 'Lifetime sales',
-                  secondaryValue: '₹ $totalSales',
+                  secondaryValue:
+                      '₹ ${NumberFormat.decimalPattern('en_IN').format(totalSales)}',
                 ),
                 const SizedBox(height: 16),
                 CustomButton(
-                  name: "Register New Customer",
+                  name: "Register new customer",
                   icon: const Icon(Icons.person_add_alt_1_rounded),
                   onTap: () {
                     context.push(AddCustomer.path);

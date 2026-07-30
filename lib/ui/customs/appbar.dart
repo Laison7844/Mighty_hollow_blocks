@@ -9,14 +9,21 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
 
   @override
   Widget build(BuildContext context) {
+    final today = DateTime.now();
+    final dateLabel =
+        '${today.day.toString().padLeft(2, '0')}/${today.month.toString().padLeft(2, '0')}';
+
     return AppBar(
-      toolbarHeight: 84,
+      toolbarHeight: 92,
       titleSpacing: 20,
       title: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Text(
             title,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
             style: const TextStyle(
               fontSize: 22,
               fontWeight: FontWeight.w800,
@@ -26,6 +33,8 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
           const SizedBox(height: 4),
           Text(
             subtitle ?? 'Track stock, production and orders at a glance.',
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
             style: const TextStyle(
               fontSize: 13,
               color: Color(0xFFD8E6FF),
@@ -49,15 +58,30 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
       ),
       actions: [
         Container(
-          margin: const EdgeInsets.only(right: 16),
+          margin: const EdgeInsets.only(right: 16, top: 16, bottom: 16),
+          padding: const EdgeInsets.symmetric(horizontal: 12),
           decoration: BoxDecoration(
             color: Colors.white.withValues(alpha: 0.16),
             borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: Colors.white24),
+            border: Border.all(color: Colors.white30),
           ),
-          child: IconButton(
-            onPressed: () {},
-            icon: const Icon(Icons.grid_view_rounded, color: Colors.white),
+          child: Row(
+            children: [
+              const Icon(
+                Icons.calendar_today_rounded,
+                color: Colors.white,
+                size: 16,
+              ),
+              const SizedBox(width: 6),
+              Text(
+                dateLabel,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w700,
+                  fontSize: 12,
+                ),
+              ),
+            ],
           ),
         ),
       ],
@@ -66,5 +90,5 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
   }
 
   @override
-  Size get preferredSize => const Size.fromHeight(84);
+  Size get preferredSize => const Size.fromHeight(92);
 }

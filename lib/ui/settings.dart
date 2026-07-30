@@ -2,9 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_projects/model/settings_model.dart';
 import 'package:flutter_projects/repository/settings_repository.dart';
 import 'package:flutter_projects/ui/customs/appbar.dart';
+import 'package:flutter_projects/ui/pdf_export_sheet.dart';
 import 'package:flutter_projects/ui/customs/textfield_custom.dart';
 import 'package:flutter_projects/util/color_util.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:intl/intl.dart';
 
 class SettingsScreen extends ConsumerStatefulWidget {
   const SettingsScreen({super.key});
@@ -130,6 +132,117 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                           },
                           child: const Text(
                             "Save changes",
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w800,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 20),
+                Container(
+                  padding: const EdgeInsets.all(20),
+                  decoration: BoxDecoration(
+                    color: ColorUtil.surface,
+                    borderRadius: BorderRadius.circular(28),
+                    border: Border.all(color: ColorUtil.border),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Container(
+                            width: 52,
+                            height: 52,
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFEAF2FF),
+                              borderRadius: BorderRadius.circular(18),
+                            ),
+                            child: const Icon(
+                              Icons.picture_as_pdf_rounded,
+                              color: ColorUtil.primary,
+                            ),
+                          ),
+                          const SizedBox(width: 14),
+                          const Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  "Reports and exports",
+                                  style: TextStyle(
+                                    fontSize: 22,
+                                    fontWeight: FontWeight.w800,
+                                  ),
+                                ),
+                                SizedBox(height: 4),
+                                Text(
+                                  "Export daily production, orders, customers or everything into a polished PDF.",
+                                  style: TextStyle(
+                                    color: ColorUtil.textSecondary,
+                                    fontSize: 14,
+                                    height: 1.4,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 18),
+                      Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.all(18),
+                        decoration: BoxDecoration(
+                          gradient: const LinearGradient(
+                            colors: [Color(0xFFF6FAFF), Color(0xFFEAF2FF)],
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                          ),
+                          borderRadius: BorderRadius.circular(22),
+                          border: Border.all(color: ColorUtil.border),
+                        ),
+                        child: const Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              "Choose the date range and report type before exporting.",
+                              style: TextStyle(
+                                fontWeight: FontWeight.w700,
+                                color: ColorUtil.textPrimary,
+                              ),
+                            ),
+                            SizedBox(height: 8),
+                            Text(
+                              "You can generate a PDF for daily production, the order list, the customer list, or a complete business report.",
+                              style: TextStyle(
+                                color: ColorUtil.textSecondary,
+                                height: 1.45,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 22),
+                      SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton.icon(
+                          onPressed: () {
+                            showModalBottomSheet<void>(
+                              context: context,
+                              isScrollControlled: true,
+                              backgroundColor: Colors.transparent,
+                              builder: (sheetContext) =>
+                                  PdfExportSheet(parentContext: context),
+                            );
+                          },
+                          icon: const Icon(Icons.file_download_outlined),
+                          label: const Text(
+                            "Export as PDF",
                             style: TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.w800,
@@ -276,7 +389,7 @@ class _PriceMetric extends StatelessWidget {
           ),
           const SizedBox(height: 8),
           Text(
-            "₹ ${value.toStringAsFixed(0)}",
+            "₹ ${NumberFormat.decimalPattern('en_IN').format(value.round())}",
             style: const TextStyle(
               color: Colors.white,
               fontWeight: FontWeight.w900,

@@ -67,6 +67,7 @@ class _ProductionScreenState extends ConsumerState<ProductionScreen> {
             (sum, log) => sum + log.totalProduction,
           );
           final todayTotal = _todayTotal(logs);
+          final netLabel = totalProduced >= 0 ? "Net lifetime" : "Net deficit";
 
           return SingleChildScrollView(
             physics: const BouncingScrollPhysics(),
@@ -83,6 +84,7 @@ class _ProductionScreenState extends ConsumerState<ProductionScreen> {
                   label: _formatProductionDate(DateTime.now()),
                   todayTotal: todayTotal,
                   lifetimeTotal: totalProduced,
+                  lifetimeLabel: netLabel,
                 ),
                 const SizedBox(height: 16),
                 CustomButton(
@@ -152,11 +154,13 @@ class _ProductionSummaryCard extends StatelessWidget {
     required this.label,
     required this.todayTotal,
     required this.lifetimeTotal,
+    required this.lifetimeLabel,
   });
 
   final String label;
   final int todayTotal;
   final int lifetimeTotal;
+  final String lifetimeLabel;
 
   @override
   Widget build(BuildContext context) {
@@ -208,7 +212,7 @@ class _ProductionSummaryCard extends StatelessWidget {
                 const SizedBox(width: 10),
                 Expanded(
                   child: Text(
-                    "Lifetime production: $lifetimeTotal blocks",
+                    "$lifetimeLabel: $lifetimeTotal blocks",
                     style: const TextStyle(
                       color: Colors.white,
                       fontWeight: FontWeight.w700,

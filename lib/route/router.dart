@@ -5,7 +5,6 @@ import 'package:flutter_projects/ui/dashborad.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import 'package:flutter_projects/ui/splash_screen.dart';
 import 'package:flutter_projects/ui/home_screen.dart';
 import 'package:flutter_projects/ui/customer_screen.dart';
 import 'package:flutter_projects/ui/production_screen.dart';
@@ -16,12 +15,8 @@ import 'package:flutter_projects/util/color_util.dart';
 
 final appRouterProvider = Provider<GoRouter>((ref) {
   return GoRouter(
-    initialLocation: SplashScreen.path,
+    initialLocation: HomeScreen.path,
     routes: [
-      GoRoute(
-        path: SplashScreen.path,
-        builder: (context, state) => SplashScreen(),
-      ),
       ShellRoute(
         builder: (context, state, child) {
           return Scaffold(

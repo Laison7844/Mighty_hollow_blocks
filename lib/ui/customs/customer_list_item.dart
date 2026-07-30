@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_projects/model/customer_model.dart';
 import 'package:flutter_projects/util/color_util.dart';
+import 'package:intl/intl.dart';
 
 class CustomerListItem extends StatelessWidget {
   final CustomerModel customer;
@@ -22,7 +23,7 @@ class CustomerListItem extends StatelessWidget {
             decoration: BoxDecoration(
               color: Colors.white,
               borderRadius: BorderRadius.circular(16),
-              border: Border(
+              border: const Border(
                 left: BorderSide(color: ColorUtil.darkGreen, width: 6),
               ),
               boxShadow: [
@@ -52,10 +53,13 @@ class CustomerListItem extends StatelessWidget {
                         ),
                       ),
                       Text(
-                        "${customer.registrationDate.day}/${customer.registrationDate.month}/${customer.registrationDate.year}",
+                        DateFormat(
+                          'dd MMM yyyy',
+                        ).format(customer.registrationDate),
                         style: const TextStyle(
                           fontSize: 12,
-                          color: Colors.grey,
+                          color: ColorUtil.textSecondary,
+                          fontWeight: FontWeight.w600,
                         ),
                       ),
                     ],
@@ -147,7 +151,7 @@ class CustomerListItem extends StatelessWidget {
                             ),
                             const SizedBox(height: 4),
                             Text(
-                              "₹ ${customer.totalSales}",
+                              "₹ ${NumberFormat.decimalPattern('en_IN').format(customer.totalSales)}",
                               style: const TextStyle(
                                 fontSize: 22,
                                 fontWeight: FontWeight.bold,
@@ -184,20 +188,31 @@ class CustomerListItem extends StatelessWidget {
                       ),
                       Container(
                         padding: const EdgeInsets.symmetric(
-                          horizontal: 12,
+                          horizontal: 10,
                           vertical: 8,
                         ),
                         decoration: BoxDecoration(
                           color: const Color(0xFFF1F5F9),
-                          borderRadius: BorderRadius.circular(8),
+                          borderRadius: BorderRadius.circular(10),
                         ),
-                        child: const Text(
-                          "View Details",
-                          style: TextStyle(
-                            color: Color(0xFF2563EB),
-                            fontWeight: FontWeight.w600,
-                            fontSize: 12,
-                          ),
+                        child: const Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              "View",
+                              style: TextStyle(
+                                color: Color(0xFF2563EB),
+                                fontWeight: FontWeight.w600,
+                                fontSize: 12,
+                              ),
+                            ),
+                            SizedBox(width: 4),
+                            Icon(
+                              Icons.arrow_forward_rounded,
+                              color: Color(0xFF2563EB),
+                              size: 14,
+                            ),
+                          ],
                         ),
                       ),
                     ],

@@ -3,6 +3,7 @@ import 'package:flutter_projects/model/order_model.dart';
 import 'package:flutter_projects/repository/order_repository.dart';
 import 'package:flutter_projects/ui/customs/appbar.dart';
 import 'package:flutter_projects/ui/customs/order_list_item.dart';
+import 'package:flutter_projects/util/color_util.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class OrderHistoryScreen extends ConsumerStatefulWidget {
@@ -79,14 +80,22 @@ class _OrderHistoryScreenState extends ConsumerState<OrderHistoryScreen> {
     final ordersAsync = ref.watch(orderStreamProvider);
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF8FAFC),
-      appBar: const CustomAppBar(title: "Order History"),
+      backgroundColor: ColorUtil.background,
+      appBar: const CustomAppBar(
+        title: "Order History",
+        subtitle: "Search and filter orders quickly.",
+      ),
       body: Column(
         children: [
           // Search & Filter Section
           Container(
             padding: const EdgeInsets.all(16),
-            color: Colors.white,
+            margin: const EdgeInsets.fromLTRB(16, 16, 16, 0),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(color: ColorUtil.border),
+            ),
             child: Column(
               children: [
                 Row(
@@ -105,7 +114,7 @@ class _OrderHistoryScreenState extends ConsumerState<OrderHistoryScreen> {
                             horizontal: 16,
                           ),
                           filled: true,
-                          fillColor: const Color(0xFFF1F5F9),
+                          fillColor: const Color(0xFFF8FAFC),
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(10),
                             borderSide: BorderSide.none,
@@ -118,7 +127,7 @@ class _OrderHistoryScreenState extends ConsumerState<OrderHistoryScreen> {
                       decoration: BoxDecoration(
                         color: _selectedDate != null
                             ? const Color(0xFF2563EB).withValues(alpha: 0.1)
-                            : const Color(0xFFF1F5F9),
+                            : const Color(0xFFF8FAFC),
                         borderRadius: BorderRadius.circular(10),
                       ),
                       child: IconButton(
@@ -157,6 +166,7 @@ class _OrderHistoryScreenState extends ConsumerState<OrderHistoryScreen> {
               ],
             ),
           ),
+          const SizedBox(height: 12),
 
           Expanded(
             child: ordersAsync.when(
@@ -173,6 +183,7 @@ class _OrderHistoryScreenState extends ConsumerState<OrderHistoryScreen> {
                 }
 
                 return SingleChildScrollView(
+                  padding: const EdgeInsets.only(bottom: 20),
                   child: Column(
                     children: filtered
                         .map((order) => OrderListItem(order: order))

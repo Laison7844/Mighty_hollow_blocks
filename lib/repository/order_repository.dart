@@ -32,6 +32,24 @@ class OrderRepository {
         });
   }
 
+  Future<List<OrderModel>> getOrdersInRange({
+    required DateTime start,
+    required DateTime end,
+  }) async {
+    final snapshot = await _ordersCollection
+        .where('order_date', isGreaterThanOrEqualTo: start.toIso8601String())
+        .where('order_date', isLessThanOrEqualTo: end.toIso8601String())
+        .orderBy('order_date', descending: true)
+        .get();
+
+    return snapshot.docs.map((doc) {
+      return OrderModel.fromJson(
+        doc.data() as Map<String, dynamic>,
+        id: doc.id,
+      );
+    }).toList();
+  }
+
   // Update Payment
   Future<void> updatePayment(String orderId, int amountPaid) async {
     final docRef = _ordersCollection.doc(orderId);

@@ -17,6 +17,10 @@ class OrderListItem extends ConsumerStatefulWidget {
 }
 
 class _OrderListItemState extends ConsumerState<OrderListItem> {
+  String _money(int amount) {
+    return '₹ ${NumberFormat.decimalPattern('en_IN').format(amount)}';
+  }
+
   void _showRecordPaymentDialog({
     required BuildContext context,
     required String name,
@@ -92,7 +96,7 @@ class _OrderListItemState extends ConsumerState<OrderListItem> {
                           children: [
                             const TextSpan(text: "Total: "),
                             TextSpan(
-                              text: "₹ ${totalAmount.toStringAsFixed(0)}",
+                              text: _money(totalAmount),
                               style: const TextStyle(
                                 color: Color(0xFF10B981),
                                 fontWeight: FontWeight.bold,
@@ -100,7 +104,7 @@ class _OrderListItemState extends ConsumerState<OrderListItem> {
                             ),
                             const TextSpan(text: " | Paid: "),
                             TextSpan(
-                              text: "₹ ${paidAmount.toStringAsFixed(0)}",
+                              text: _money(paidAmount),
                               style: const TextStyle(
                                 color: Color(0xFF2563EB),
                                 fontWeight: FontWeight.bold,
@@ -117,7 +121,7 @@ class _OrderListItemState extends ConsumerState<OrderListItem> {
                             style: TextStyle(fontSize: 14),
                           ),
                           Text(
-                            "₹ ${remainingDue.toStringAsFixed(2)}",
+                            _money(remainingDue),
                             style: const TextStyle(
                               color: Color(0xFFEF4444), // Warning Red
                               fontWeight: FontWeight.bold,
@@ -588,7 +592,7 @@ class _OrderListItemState extends ConsumerState<OrderListItem> {
                           ),
                           const SizedBox(height: 5),
                           Text(
-                            "₹ ${widget.order.paidAmount} / ₹ ${widget.order.dueAmount}",
+                            "${_money(widget.order.paidAmount)} / ${_money(widget.order.dueAmount)}",
                             style: TextStyle(
                               fontWeight: FontWeight.w700,
                               color: paymentColor,
@@ -643,7 +647,7 @@ class _OrderListItemState extends ConsumerState<OrderListItem> {
                         ),
                       ),
                       Text(
-                        "₹ ${widget.order.orderValue}",
+                        _money(widget.order.orderValue),
                         style: const TextStyle(
                           color: ColorUtil.darkGreen,
                           fontSize: 26,

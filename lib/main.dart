@@ -1,3 +1,6 @@
+import 'dart:async';
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_projects/route/router.dart';
 import 'package:flutter_projects/util/color_util.dart';
@@ -5,12 +8,31 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
 
-void main() async {
-  WidgetsFlutterBinding.ensureInitialized();
+Future<void> main() async {
+  await runZonedGuarded(
+    () async {
+      WidgetsFlutterBinding.ensureInitialized();
 
-  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+      FlutterError.onError = (details) {
+        FlutterError.presentError(details);
+      };
 
-  runApp(const ProviderScope(child: MyApp()));
+      PlatformDispatcher.instance.onError = (error, stack) {
+        debugPrint('Uncaught platform error: $error');
+        debugPrintStack(stackTrace: stack);
+        return true;
+      };
+
+      await Firebase.initializeApp(
+        options: DefaultFirebaseOptions.currentPlatform,
+      );
+      runApp(const ProviderScope(child: MyApp()));
+    },
+    (error, stack) {
+      debugPrint('Uncaught zone error: $error');
+      debugPrintStack(stackTrace: stack);
+    },
+  );
 }
 
 class MyApp extends ConsumerWidget {

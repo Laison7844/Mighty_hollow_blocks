@@ -40,6 +40,21 @@ class ProductionRepository {
         });
   }
 
+  Future<List<ProductionModel>> getProductionLogsInRange({
+    required DateTime start,
+    required DateTime end,
+  }) async {
+    final snapshot = await _productionCollection
+        .where('date', isGreaterThanOrEqualTo: start)
+        .where('date', isLessThanOrEqualTo: end)
+        .orderBy('date', descending: true)
+        .get();
+
+    return snapshot.docs
+        .map((doc) => ProductionModel.fromSnapshot(doc))
+        .toList();
+  }
+
   // Get Today's Production
   Future<int> getTodayProduction() async {
     final now = DateTime.now();

@@ -49,18 +49,18 @@ class Dashborad extends StatelessWidget {
     return SafeArea(
       top: false,
       child: Padding(
-        padding: const EdgeInsets.fromLTRB(14, 8, 14, 10),
+        padding: const EdgeInsets.fromLTRB(12, 8, 12, 10),
         child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
           decoration: BoxDecoration(
             color: ColorUtil.surface,
-            borderRadius: BorderRadius.circular(28),
+            borderRadius: BorderRadius.circular(24),
             border: Border.all(color: ColorUtil.border),
             boxShadow: const [
               BoxShadow(
                 color: Color(0x120F2D59),
-                blurRadius: 24,
-                offset: Offset(0, 14),
+                blurRadius: 22,
+                offset: Offset(0, 12),
               ),
             ],
           ),
@@ -73,7 +73,7 @@ class Dashborad extends StatelessWidget {
                 child: Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 3),
                   child: InkWell(
-                    borderRadius: BorderRadius.circular(20),
+                    borderRadius: BorderRadius.circular(16),
                     onTap: () {
                       if (!isSelected) {
                         context.go(item.route);
@@ -82,14 +82,21 @@ class Dashborad extends StatelessWidget {
                     child: AnimatedContainer(
                       duration: const Duration(milliseconds: 220),
                       curve: Curves.easeOutCubic,
-                      padding: const EdgeInsets.symmetric(
+                      padding: EdgeInsets.symmetric(
                         horizontal: 8,
-                        vertical: 12,
+                        vertical: isSelected ? 10 : 11,
                       ),
                       decoration: BoxDecoration(
                         gradient: isSelected ? ColorUtil.actionGradient : null,
-                        color: isSelected ? null : Colors.transparent,
-                        borderRadius: BorderRadius.circular(20),
+                        color: isSelected
+                            ? null
+                            : ColorUtil.surfaceMuted.withValues(alpha: 0.6),
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(
+                          color: isSelected
+                              ? Colors.transparent
+                              : ColorUtil.border.withValues(alpha: 0.8),
+                        ),
                       ),
                       child: Column(
                         mainAxisSize: MainAxisSize.min,
@@ -107,13 +114,14 @@ class Dashborad extends StatelessWidget {
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                             style: TextStyle(
-                              fontSize: 11,
+                              fontSize: 10.5,
                               fontWeight: FontWeight.w700,
                               color: isSelected
                                   ? Colors.white
                                   : ColorUtil.textSecondary,
                             ),
                           ),
+                          const SizedBox(height: 1),
                         ],
                       ),
                     ),

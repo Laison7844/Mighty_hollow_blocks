@@ -3,6 +3,7 @@ import 'package:flutter_projects/model/production_model.dart';
 import 'package:flutter_projects/repository/production_repository.dart';
 import 'package:flutter_projects/ui/customs/appbar.dart';
 import 'package:flutter_projects/ui/customs/production_list_item.dart';
+import 'package:flutter_projects/util/color_util.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class ProductionHistoryScreen extends ConsumerStatefulWidget {
@@ -51,20 +52,28 @@ class _ProductionHistoryScreenState
     final productionAsync = ref.watch(productionStreamProvider);
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF8FAFC),
-      appBar: CustomAppBar(title: "Production History"),
+      backgroundColor: ColorUtil.background,
+      appBar: const CustomAppBar(
+        title: "Production History",
+        subtitle: "Filter logs by date and quantity instantly.",
+      ),
       body: Column(
         children: [
           // --- SEARCH SECTION ---
           Container(
             padding: const EdgeInsets.all(20),
-            color: Colors.white,
+            margin: const EdgeInsets.fromLTRB(16, 16, 16, 0),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(color: ColorUtil.border),
+            ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const Text(
                   "Filter By",
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800),
                 ),
                 const SizedBox(height: 10),
                 Row(
@@ -82,7 +91,7 @@ class _ProductionHistoryScreenState
                           decoration: BoxDecoration(
                             color: _selectedDate != null
                                 ? Colors.blue.withValues(alpha: 0.1)
-                                : Colors.grey.shade100,
+                                : const Color(0xFFF8FAFC),
                             border: Border.all(
                               color: _selectedDate != null
                                   ? Colors.blue
@@ -139,7 +148,7 @@ class _ProductionHistoryScreenState
                           filled: true,
                           fillColor: _quantityController.text.isNotEmpty
                               ? Colors.blue.withValues(alpha: 0.05)
-                              : Colors.grey.shade100,
+                              : const Color(0xFFF8FAFC),
                           enabledBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
                             borderSide: BorderSide(color: Colors.grey.shade300),
@@ -156,7 +165,7 @@ class _ProductionHistoryScreenState
               ],
             ),
           ),
-          const Divider(height: 1),
+          const SizedBox(height: 12),
 
           // --- LIST SECTION ---
           Expanded(
@@ -208,7 +217,7 @@ class _ProductionHistoryScreenState
                 }
 
                 return ListView.builder(
-                  padding: const EdgeInsets.all(20),
+                  padding: const EdgeInsets.fromLTRB(16, 4, 16, 20),
                   physics: const BouncingScrollPhysics(),
                   itemCount: filteredLogs.length,
                   itemBuilder: (context, index) {

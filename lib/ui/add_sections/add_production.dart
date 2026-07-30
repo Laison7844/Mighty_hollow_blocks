@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_projects/model/production_model.dart';
 import 'package:flutter_projects/repository/production_repository.dart';
-import 'package:flutter_projects/ui/customs/textfield_custom.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
@@ -134,38 +133,38 @@ class _AddProductionState extends ConsumerState<AddProduction> {
 
   @override
   Widget build(BuildContext context) {
-    return SingleChildScrollView(
-      child: Dialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        backgroundColor: Colors.white,
-        child: Container(
-          padding: const EdgeInsets.all(24.0),
-          width: 400,
+    return AlertDialog(
+      insetPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+      backgroundColor: Colors.white,
+      titlePadding: const EdgeInsets.fromLTRB(22, 18, 10, 0),
+      title: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(
+            widget.productionToEdit != null
+                ? "Edit Production"
+                : "Add Production",
+            style: const TextStyle(
+              fontSize: 22,
+              fontWeight: FontWeight.w800,
+              color: Color(0xFF1E293B),
+            ),
+          ),
+          IconButton(
+            onPressed: _isLoading ? null : () => Navigator.pop(context),
+            icon: const Icon(Icons.close, color: Color(0xFF94A3B8)),
+          ),
+        ],
+      ),
+      contentPadding: const EdgeInsets.fromLTRB(22, 12, 22, 8),
+      content: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 430),
+        child: SingleChildScrollView(
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // --- Header ---
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    widget.productionToEdit != null
-                        ? "Edit Production"
-                        : "Add Production",
-                    style: const TextStyle(
-                      fontSize: 22,
-                      fontWeight: FontWeight.bold,
-                      color: Color(0xFF1E293B),
-                    ),
-                  ),
-                  GestureDetector(
-                    onTap: () => Navigator.pop(context),
-                    child: const Icon(Icons.close, color: Color(0xFF94A3B8)),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 5),
               const Divider(color: Color(0xFFE2E8F0)),
               const SizedBox(height: 15),
 
@@ -182,10 +181,19 @@ class _AddProductionState extends ConsumerState<AddProduction> {
               GestureDetector(
                 onTap: _selectDate,
                 child: AbsorbPointer(
-                  child: TextfieldCustom(
-                    hintText: "Select Date",
+                  child: TextField(
                     controller: dateController,
-                    suffix: const Icon(Icons.calendar_today_outlined, size: 20),
+                    readOnly: true,
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                      color: Color(0xFF222222), // ColorUtil.textPrimary
+                    ),
+                    decoration: const InputDecoration(
+                      hintText: "Select Date",
+                      suffixIcon: Icon(Icons.calendar_today_outlined, size: 20),
+                      fillColor: Color(0xFFF1F1F1), // ColorUtil.surfaceMuted
+                    ),
                   ),
                 ),
               ),
@@ -202,22 +210,49 @@ class _AddProductionState extends ConsumerState<AddProduction> {
                 ),
               ),
               const SizedBox(height: 8),
-              TextfieldCustom(
-                hintText: "Count of 4 inch",
+              TextField(
                 controller: fourInchController,
                 keyboardType: TextInputType.number,
+                enabled: !_isLoading,
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                  color: Color(0xFF222222),
+                ),
+                decoration: const InputDecoration(
+                  hintText: "Count of 4 inch",
+                  fillColor: Color(0xFFF1F1F1),
+                ),
               ),
               const SizedBox(height: 10),
-              TextfieldCustom(
-                hintText: "Count of 6 inch",
+              TextField(
                 controller: sixInchController,
                 keyboardType: TextInputType.number,
+                enabled: !_isLoading,
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                  color: Color(0xFF222222),
+                ),
+                decoration: const InputDecoration(
+                  hintText: "Count of 6 inch",
+                  fillColor: Color(0xFFF1F1F1),
+                ),
               ),
               const SizedBox(height: 10),
-              TextfieldCustom(
-                hintText: "Count of 8 inch",
+              TextField(
                 controller: eightInchController,
                 keyboardType: TextInputType.number,
+                enabled: !_isLoading,
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                  color: Color(0xFF222222),
+                ),
+                decoration: const InputDecoration(
+                  hintText: "Count of 8 inch",
+                  fillColor: Color(0xFFF1F1F1),
+                ),
               ),
               const SizedBox(height: 20),
               const Text(
@@ -229,65 +264,54 @@ class _AddProductionState extends ConsumerState<AddProduction> {
                 ),
               ),
               const SizedBox(height: 8),
-              TextfieldCustom(
-                hintText: "Add notes about this production batch",
+              TextField(
                 controller: descriptionController,
                 maxLines: 4,
                 minLines: 3,
-              ),
-
-              const SizedBox(height: 30),
-
-              // --- Action Buttons ---
-              Row(
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  Expanded(
-                    child: ElevatedButton(
-                      onPressed: () => Navigator.pop(context),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFFF1F5F9),
-                        foregroundColor: const Color(0xFF475569),
-                        elevation: 0,
-                        padding: const EdgeInsets.symmetric(vertical: 15),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                      ),
-                      child: const Text("Cancel"),
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: ElevatedButton(
-                      onPressed: _isLoading ? null : _saveProduction,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF2563EB),
-                        foregroundColor: Colors.white,
-                        elevation: 0,
-                        padding: const EdgeInsets.symmetric(vertical: 15),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                      ),
-                      child: _isLoading
-                          ? const SizedBox(
-                              height: 20,
-                              width: 20,
-                              child: CircularProgressIndicator(
-                                color: Colors.white,
-                                strokeWidth: 2,
-                              ),
-                            )
-                          : const Text("Save"),
-                    ),
-                  ),
-                ],
+                enabled: !_isLoading,
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                  color: Color(0xFF222222),
+                ),
+                decoration: const InputDecoration(
+                  hintText: "Add notes about this production batch",
+                  fillColor: Color(0xFFF1F1F1),
+                ),
               ),
             ],
           ),
         ),
       ),
+      actionsPadding: const EdgeInsets.fromLTRB(12, 0, 12, 14),
+      actions: [
+        TextButton(
+          onPressed: _isLoading ? null : () => Navigator.pop(context),
+          child: const Text("Cancel"),
+        ),
+        ElevatedButton(
+          onPressed: _isLoading ? null : _saveProduction,
+          style: ElevatedButton.styleFrom(
+            backgroundColor: const Color(0xFF2563EB),
+            foregroundColor: Colors.white,
+            elevation: 0,
+            minimumSize: const Size(120, 48),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+          ),
+          child: _isLoading
+              ? const SizedBox(
+                  height: 20,
+                  width: 20,
+                  child: CircularProgressIndicator(
+                    color: Colors.white,
+                    strokeWidth: 2,
+                  ),
+                )
+              : const Text("Save", style: TextStyle(fontWeight: FontWeight.w700)),
+        ),
+      ],
     );
   }
 }

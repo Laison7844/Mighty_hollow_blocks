@@ -29,7 +29,7 @@ final customerStreamProvider = Provider<AsyncValue<List<CustomerModel>>>((ref) {
     return AsyncValue.error(ordersAsync.error!, ordersAsync.stackTrace!);
   }
 
-  final customers = _buildCustomerProfiles(
+  final customers = buildCustomerProfiles(
     manualCustomersAsync.value ?? const [],
     ordersAsync.value ?? const [],
   );
@@ -60,9 +60,22 @@ class CustomerRepository {
           }).toList();
         });
   }
+
+  Future<List<CustomerModel>> getCustomersOnce() async {
+    final snapshot = await _customersCollection
+        .orderBy('registrationDate', descending: true)
+        .get();
+
+    return snapshot.docs.map((doc) {
+      return CustomerModel.fromJson(
+        doc.data() as Map<String, dynamic>,
+        id: doc.id,
+      );
+    }).toList();
+  }
 }
 
-List<CustomerModel> _buildCustomerProfiles(
+List<CustomerModel> buildCustomerProfiles(
   List<CustomerModel> manualCustomers,
   List<OrderModel> orders,
 ) {
